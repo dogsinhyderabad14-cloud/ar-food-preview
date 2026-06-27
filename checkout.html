@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Checkout</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#fff3e6;
+text-align:center;
+margin:0;
+}
+
+.container{
+
+width:450px;
+margin:40px auto;
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 5px 20px rgba(0,0,0,.2);
+
+}
+
+input{
+
+width:90%;
+padding:15px;
+margin:10px;
+font-size:18px;
+border-radius:8px;
+
+}
+
+button{
+
+padding:15px 30px;
+background:#ff5a1f;
+color:white;
+border:none;
+border-radius:10px;
+font-size:18px;
+cursor:pointer;
+
+}
+
+h1{
+
+color:#ff5a1f;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Checkout</h1>
+
+<input id="customerName" placeholder="Customer Name">
+
+<input id="phoneNumber" placeholder="Phone Number">
+
+<input id="tableNumber" placeholder="Table Number" readonly>
+
+<h2 id="totalPrice">Total : ₹0</h2>
+
+<button onclick="placeOrder()">
+
+Place Order
+
+</button>
+
+</div>
+
+<script>
+
+let total = localStorage.getItem("cartTotal");
+
+if(total == null){
+    total = 0;
+}
+
+document.getElementById("totalPrice").innerHTML = "Total : ₹" + total;
+
+function placeOrder() {
+    let name = document.getElementById("customerName").value;
+    let phone = document.getElementById("phoneNumber").value;
+    let table = document.getElementById("tableNumber").value;
+
+    alert(
+        "Order Placed Successfully 🎉\n\n" +
+        "Name: " + name + "\n" +
+        "Phone: " + phone + "\n" +
+        "Table: " + table + "\n" +
+        "Total: ₹" + total
+    );
+}
+let table = localStorage.getItem("tableNumber");
+
+if(table){
+    document.getElementById("tableNumber").value = table;
+}
+</script>
+
+</body>
+
+</html>
