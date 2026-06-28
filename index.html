@@ -47,6 +47,18 @@
       cursor: pointer;
     }
 
+    .table-box {
+      width: fit-content;
+      margin: 20px auto 0;
+      background: white;
+      padding: 15px 30px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: bold;
+      border-radius: 15px;
+      box-shadow: 0 5px 15px rgba(0,0,0,.15);
+    }
+
     .cart {
       background: white;
       width: fit-content;
@@ -141,38 +153,7 @@
       font-weight: bold;
       margin: 0 12px;
     }
-  .table-box {
-  background: white;
-  width: fit-content;
-  margin: 20px auto 0;
-  padding: 12px 30px;
-  border-radius: 15px;
-  font-size: 20px;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-}
-.table-box{
-
-width:260px;
-
-margin:20px auto;
-
-background:white;
-
-padding:15px;
-
-text-align:center;
-
-font-size:22px;
-
-font-weight:bold;
-
-border-radius:15px;
-
-box-shadow:0 5px 15px rgba(0,0,0,.15);
-
-}
-</style>
+  </style>
 </head>
 
 <body>
@@ -187,13 +168,10 @@ box-shadow:0 5px 15px rgba(0,0,0,.15);
   </header>
 
   <div class="table-box">
-  🍽️ Table Number: <span id="tableNumber">Not selected</span>
-</div>
-<div class="table-box">
-    🍽️ Table :
-    <span id="tableNumber">Loading...</span>
-</div>
-<div class="cart">
+    🍽️ Table Number: <span id="tableNumber">Loading...</span>
+  </div>
+
+  <div class="cart">
     🛒 Cart: <span id="cartCount">0</span> items | Total: ₹<span id="cartTotal">0</span>
   </div>
 
@@ -278,20 +256,7 @@ box-shadow:0 5px 15px rgba(0,0,0,.15);
   </section>
 
   <script>
-    const params = new URLSearchParams(window.location.search);
-
-const table = params.get("table");
-
-if(table){
-
-window.onload=function(){
-
-document.getElementById("tableNumber").innerHTML=table;
-
-}
-
-}
-const prices = {
+    const prices = {
       burger: 99,
       pizza: 149,
       coffee: 79
@@ -302,6 +267,17 @@ const prices = {
       pizza: 0,
       coffee: 0
     };
+
+    window.addEventListener("DOMContentLoaded", function () {
+      const params = new URLSearchParams(window.location.search);
+      const table = params.get("table");
+
+      if (table) {
+        document.getElementById("tableNumber").innerText = table;
+      } else {
+        document.getElementById("tableNumber").innerText = "Not selected";
+      }
+    });
 
     function addItem(item) {
       cart[item]++;
@@ -331,19 +307,22 @@ const prices = {
       document.getElementById("cartTotal").innerText = totalPrice;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
-const table = urlParams.get("table");
-
-if (table) {
-  document.getElementById("tableNumber").innerText = table;
-}
-function openScanner() {
+    function openScanner() {
       alert("Scanner Coming Soon!");
     }
 
-   function goToCheckout() {
-  window.location.href = "./checkout.html";
-}
+    function goToCheckout() {
+      const total = document.getElementById("cartTotal").innerText;
+      const table = document.getElementById("tableNumber").innerText;
+
+      if (total == 0) {
+        alert("Please add at least one item before checkout.");
+      } else if (table === "Not selected") {
+        window.location.href = "checkout.html";
+      } else {
+        window.location.href = "checkout.html?table=" + table;
+      }
+    }
   </script>
 
 </body>
