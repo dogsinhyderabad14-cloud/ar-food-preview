@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Checkout</title>
+
+<style>
+
+body{
+
+font-family:Arial;
+
+background:#fff2df;
+
+display:flex;
+
+justify-content:center;
+
+align-items:center;
+
+height:100vh;
+
+}
+
+.container{
+
+background:white;
+
+padding:30px;
+
+border-radius:20px;
+
+width:400px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.2);
+
+text-align:center;
+
+}
+
+input{
+
+width:100%;
+
+padding:12px;
+
+margin-top:15px;
+
+font-size:17px;
+
+border-radius:10px;
+
+border:1px solid gray;
+
+box-sizing:border-box;
+
+}
+
+button{
+
+margin-top:20px;
+
+width:100%;
+
+padding:14px;
+
+background:green;
+
+color:white;
+
+font-size:18px;
+
+border:none;
+
+border-radius:30px;
+
+cursor:pointer;
+
+}
+
+button:hover{
+
+background:darkgreen;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Checkout</h1>
+
+<p>Please enter your details</p>
+
+<input type="text" placeholder="Customer Name">
+
+<input type="tel" placeholder="Phone Number">
+
+<input type="text" placeholder="Table Number">
+
+<button onclick="placeOrder()">Place Order</button>
+
+</div>
+
+<script>
+
+function placeOrder() {
+
+    alert("🎉 Order Placed Successfully!");
+
+    window.location.href = "success.html";
+
+}
+</script>
+
+</body>
+</html>

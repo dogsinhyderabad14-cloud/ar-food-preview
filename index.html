@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KRUTZ Food AR Menu</title>
+
+  <script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #fff2df;
+      color: #111;
+    }
+
+    header {
+      text-align: center;
+      background: #111;
+      color: white;
+      padding: 25px 15px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    header p {
+      color: #f5c542;
+      margin-top: 8px;
+    }
+
+    .header-buttons {
+      margin-top: 20px;
+    }
+
+    .scanner-btn {
+      background: #ff9800;
+      color: white;
+      border: none;
+      padding: 14px 28px;
+      font-size: 18px;
+      font-weight: bold;
+      border-radius: 30px;
+      cursor: pointer;
+    }
+
+    .cart {
+      background: white;
+      width: fit-content;
+      margin: 20px auto 10px;
+      padding: 12px 35px;
+      border-radius: 15px;
+      font-size: 20px;
+      font-weight: bold;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .checkout-box {
+      text-align: center;
+      margin: 15px 0 25px;
+    }
+
+    .checkout-btn {
+      background: green;
+      color: white;
+      border: none;
+      padding: 14px 30px;
+      border-radius: 30px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .menu {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 25px;
+      padding: 35px 6%;
+    }
+
+    .card {
+      background: white;
+      border-radius: 18px;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.12);
+    }
+
+    .rating {
+      color: #ff9800;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .card h2 {
+      font-size: 26px;
+      margin: 10px 0 20px;
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 260px;
+      background: #eeeeee;
+      border-radius: 14px;
+    }
+
+    .desc {
+      font-size: 16px;
+      color: #444;
+      min-height: 45px;
+      margin: 18px 0 10px;
+    }
+
+    .price {
+      font-size: 26px;
+      color: green;
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    button {
+      background: #111;
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    .qty {
+      font-size: 22px;
+      font-weight: bold;
+      margin: 0 12px;
+    }
+  .table-box {
+  background: white;
+  width: fit-content;
+  margin: 20px auto 0;
+  padding: 12px 30px;
+  border-radius: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+.table-box{
+
+width:260px;
+
+margin:20px auto;
+
+background:white;
+
+padding:15px;
+
+text-align:center;
+
+font-size:22px;
+
+font-weight:bold;
+
+border-radius:15px;
+
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+
+}
+</style>
+</head>
+
+<body>
+
+  <header>
+    <h1>KRUTZ Food AR Menu</h1>
+    <p>View food in 3D and place it on your table using AR</p>
+
+    <div class="header-buttons">
+      <button class="scanner-btn" onclick="openScanner()">📷 Scan Table QR</button>
+    </div>
+  </header>
+
+  <div class="table-box">
+  🍽️ Table Number: <span id="tableNumber">Not selected</span>
+</div>
+<div class="table-box">
+    🍽️ Table :
+    <span id="tableNumber">Loading...</span>
+</div>
+<div class="cart">
+    🛒 Cart: <span id="cartCount">0</span> items | Total: ₹<span id="cartTotal">0</span>
+  </div>
+
+  <div class="checkout-box">
+    <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+  </div>
+
+  <section class="menu">
+
+    <div class="card">
+      <div class="rating">⭐ ⭐ ⭐ ⭐ ⭐ 4.8</div>
+      <h2>Chicken Burger 🤍</h2>
+
+      <model-viewer
+        src="burger.glb"
+        alt="Chicken Burger 3D Model"
+        camera-controls
+        auto-rotate
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        shadow-intensity="1">
+      </model-viewer>
+
+      <p class="desc">Juicy grilled chicken burger with fresh lettuce, cheese and special sauce.</p>
+      <div class="price">₹99</div>
+
+      <div>
+        <button onclick="removeItem('burger')">−</button>
+        <span class="qty" id="burgerQty">0</span>
+        <button onclick="addItem('burger')">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="rating">⭐ ⭐ ⭐ ⭐ 4.5</div>
+      <h2>Pizza 🤍</h2>
+
+      <model-viewer
+        src="pizza.glb"
+        alt="Pizza 3D Model"
+        camera-controls
+        auto-rotate
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        shadow-intensity="1">
+      </model-viewer>
+
+      <p class="desc">Cheesy pizza with soft crust, tomato sauce and fresh toppings.</p>
+      <div class="price">₹149</div>
+
+      <div>
+        <button onclick="removeItem('pizza')">−</button>
+        <span class="qty" id="pizzaQty">0</span>
+        <button onclick="addItem('pizza')">+</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="rating">⭐ ⭐ ⭐ ⭐ ⭐ 4.7</div>
+      <h2>Coffee 🤍</h2>
+
+      <model-viewer
+        src="coffee_cup.glb"
+        alt="Coffee 3D Model"
+        camera-controls
+        auto-rotate
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        shadow-intensity="1">
+      </model-viewer>
+
+      <p class="desc">Hot premium coffee with rich aroma and creamy texture.</p>
+      <div class="price">₹79</div>
+
+      <div>
+        <button onclick="removeItem('coffee')">−</button>
+        <span class="qty" id="coffeeQty">0</span>
+        <button onclick="addItem('coffee')">+</button>
+      </div>
+    </div>
+
+  </section>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+
+const table = params.get("table");
+
+if(table){
+
+window.onload=function(){
+
+document.getElementById("tableNumber").innerHTML=table;
+
+}
+
+}
+const prices = {
+      burger: 99,
+      pizza: 149,
+      coffee: 79
+    };
+
+    const cart = {
+      burger: 0,
+      pizza: 0,
+      coffee: 0
+    };
+
+    function addItem(item) {
+      cart[item]++;
+      updateCart();
+    }
+
+    function removeItem(item) {
+      if (cart[item] > 0) {
+        cart[item]--;
+      }
+      updateCart();
+    }
+
+    function updateCart() {
+      const totalItems = cart.burger + cart.pizza + cart.coffee;
+
+      const totalPrice =
+        cart.burger * prices.burger +
+        cart.pizza * prices.pizza +
+        cart.coffee * prices.coffee;
+
+      document.getElementById("burgerQty").innerText = cart.burger;
+      document.getElementById("pizzaQty").innerText = cart.pizza;
+      document.getElementById("coffeeQty").innerText = cart.coffee;
+
+      document.getElementById("cartCount").innerText = totalItems;
+      document.getElementById("cartTotal").innerText = totalPrice;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+const table = urlParams.get("table");
+
+if (table) {
+  document.getElementById("tableNumber").innerText = table;
+}
+function openScanner() {
+      alert("Scanner Coming Soon!");
+    }
+
+   function goToCheckout() {
+  window.location.href = "./checkout.html";
+}
+  </script>
+
+</body>
+</html>
