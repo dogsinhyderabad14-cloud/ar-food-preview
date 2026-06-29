@@ -1,124 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Checkout</title>
 
 <style>
-
-body{
-
-font-family:Arial;
-
-background:#fff2df;
-
-display:flex;
-
-justify-content:center;
-
-align-items:center;
-
-height:100vh;
-
+body {
+  font-family: Arial;
+  background: #fff2df;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
-.container{
-
-background:white;
-
-padding:30px;
-
-border-radius:20px;
-
-width:400px;
-
-box-shadow:0 5px 15px rgba(0,0,0,.2);
-
-text-align:center;
-
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  width: 400px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.2);
+  text-align: center;
 }
 
-input{
-
-width:100%;
-
-padding:12px;
-
-margin-top:15px;
-
-font-size:17px;
-
-border-radius:10px;
-
-border:1px solid gray;
-
-box-sizing:border-box;
-
+input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 15px;
+  font-size: 17px;
+  border-radius: 10px;
+  border: 1px solid gray;
+  box-sizing: border-box;
 }
 
-button{
-
-margin-top:20px;
-
-width:100%;
-
-padding:14px;
-
-background:green;
-
-color:white;
-
-font-size:18px;
-
-border:none;
-
-border-radius:30px;
-
-cursor:pointer;
-
+.order-box {
+  margin-top: 20px;
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  text-align: left;
 }
 
-button:hover{
-
-background:darkgreen;
-
+button {
+  margin-top: 20px;
+  width: 100%;
+  padding: 14px;
+  background: green;
+  color: white;
+  font-size: 18px;
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
 }
 
+button:hover {
+  background: darkgreen;
+}
 </style>
-
 </head>
 
 <body>
 
 <div class="container">
+  <h1>Checkout</h1>
+  <p>Please enter your details</p>
 
-<h1>Checkout</h1>
+  <div class="order-box">
+    <h3>Order Summary</h3>
+    <p>Burger: <span id="burgerQty">0</span></p>
+    <p>Pizza: <span id="pizzaQty">0</span></p>
+    <p>Coffee: <span id="coffeeQty">0</span></p>
+    <p><b>Total: ₹<span id="totalAmount">0</span></b></p>
+    <p><b>Table: <span id="tableNumberShow">Not selected</span></b></p>
+  </div>
 
-<p>Please enter your details</p>
+  <input id="customerName" type="text" placeholder="Customer Name">
+  <input id="phoneNumber" type="tel" placeholder="Phone Number">
+  <input id="tableNumber" type="text" placeholder="Table Number">
 
-<input type="text" placeholder="Customer Name">
-
-<input type="tel" placeholder="Phone Number">
-
-<input type="text" placeholder="Table Number">
-
-<button onclick="placeOrder()">Place Order</button>
-
+  <button onclick="placeOrder()">Place Order</button>
 </div>
 
-<script>
+<script type="module">
+  import { db, collection, addDoc, serverTimestamp } from "./firebase.js";
 
-function placeOrder() {
+  const orderData = JSON.parse(localStorage.getItem("orderData"));
 
-    alert("🎉 Order Placed Successfully!");
+  if (orderData) {
+    document.getElementById("burgerQty").innerText = orderData.burger || 0;
+    document.getElementById("pizzaQty").innerText = orderData.pizza || 0;
+    document.getElementById("coffeeQty").innerText = orderData.coffee || 0;
+    document.getElementById("totalAmount").innerText = orderData.totalAmount || 0;
+    document.getElementById("tableNumberShow").innerText = orderData.tableNumber || "Not selected";
 
-    window.location.href = "success.html";
+    if (orderData.tableNumber && orderData.tableNumber !== "Not selected") {
+      document.getElementById("tableNumber").value = orderData.tableNumber;
+    }
+  }
 
-}
+  async function placeOrder() {
+    const name = document.getElementById("customerName").value;
+    const phone = document.getElementById("phoneNumber").value;
+    const table = document.getElementById("tableNumber").value;
+
+    if (name === "" || phone === "" || table === "") {
+      alert("Please fill all details.");
+      return;
+    }
+
+    if (!orderData) {
+      alert("No order found. Please go back to menu and add items.");
+      return;
+    }
+
+    try {
+      const docRef = await addDoc(collection(db, "orders"), {
+        customerName: name,
+        phoneNumber: phone,
+        tableNumber: table,
+        items: {
+          burger: orderData.burger || 0,
+          pizza: orderData.pizza || 0,
+          coffee: orderData.coffee || 0
+        },
+        totalAmount: orderData.totalAmount || 0,
+        status: "Pending",
+        createdAt: serverTimestamp()
+      });
+
+      localStorage.removeItem("orderData");
+
+      alert("🎉 Order Placed Successfully!");
+      window.location.href = "track.html?id=" + docRef.id;
+
+    } catch (error) {
+      alert("Error placing order.");
+      console.error(error);
+    }
+  }
+
+  window.placeOrder = placeOrder;
 </script>
 
 </body>

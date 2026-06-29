@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Track Order</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #fff2df;
+      text-align: center;
+      padding-top: 70px;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 360px;
+      margin: auto;
+      box-shadow: 0 5px 15px rgba(0,0,0,.2);
+    }
+
+    .status {
+      font-size: 28px;
+      font-weight: bold;
+      color: green;
+      margin: 20px 0;
+    }
+
+    .details {
+      text-align: left;
+      background: #fff7ec;
+      padding: 15px;
+      border-radius: 15px;
+      margin-top: 15px;
+    }
+
+    button {
+      background: green;
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <h1>🍽️ Your Order</h1>
+
+    <p>Status:</p>
+    <div class="status" id="orderStatus">Loading...</div>
+
+    <div class="details">
+      <p><b>Order ID:</b> <span id="orderId">Loading...</span></p>
+      <p><b>Table:</b> <span id="tableNumber">Loading...</span></p>
+      <p><b>Burger:</b> <span id="burgerQty">0</span></p>
+      <p><b>Pizza:</b> <span id="pizzaQty">0</span></p>
+      <p><b>Coffee:</b> <span id="coffeeQty">0</span></p>
+      <p><b>Total:</b> ₹<span id="totalAmount">0</span></p>
+    </div>
+
+    <button onclick="window.location.href='index.html'">Back to Menu</button>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+    import {
+      doc,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("id");
+
+    if (!orderId) {
+      document.getElementById("orderStatus").innerText = "No order ID found";
+    } else {
+      document.getElementById("orderId").innerText = orderId;
+
+      const orderRef = doc(db, "orders", orderId);
+
+      onSnapshot(orderRef, function(docSnap) {
+        if (docSnap.exists()) {
+          const order = docSnap.data();
+          const items = order.items || {};
+
+          document.getElementById("orderStatus").innerText = order.status || "Pending";
+          document.getElementById("tableNumber").innerText = order.tableNumber || "No table";
+          document.getElementById("burgerQty").innerText = items.burger || 0;
+          document.getElementById("pizzaQty").innerText = items.pizza || 0;
+          document.getElementById("coffeeQty").innerText = items.coffee || 0;
+          document.getElementById("totalAmount").innerText = order.totalAmount || 0;
+        } else {
+          document.getElementById("orderStatus").innerText = "Order not found";
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
