@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ AI Waiter</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#fff2df;
+  color:#111;
+  min-height:100vh;
+  padding:20px;
+}
+
+.app{
+  max-width:900px;
+  margin:auto;
+  background:white;
+  border-radius:28px;
+  overflow:hidden;
+  box-shadow:0 15px 45px rgba(0,0,0,.18);
+}
+
+.header{
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:25px;
+}
+
+.header h1{
+  color:#ff9800;
+  margin-bottom:8px;
+}
+
+.header p{
+  color:#ddd;
+}
+
+.chat-box{
+  height:430px;
+  overflow-y:auto;
+  padding:22px;
+  background:#fff7ec;
+}
+
+.message{
+  max-width:75%;
+  padding:14px 16px;
+  border-radius:18px;
+  margin-bottom:14px;
+  line-height:1.5;
+}
+
+.bot{
+  background:white;
+  border:1px solid #ead2ad;
+}
+
+.user{
+  background:#111;
+  color:white;
+  margin-left:auto;
+}
+
+.quick-buttons{
+  padding:15px 22px;
+  background:white;
+  border-top:1px solid #eee;
+}
+
+.quick-buttons button{
+  border:none;
+  background:#ff9800;
+  color:#111;
+  padding:10px 14px;
+  border-radius:20px;
+  margin:5px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.cart{
+  background:#111;
+  color:white;
+  padding:18px 22px;
+}
+
+.cart h3{
+  color:#ff9800;
+  margin-bottom:8px;
+}
+
+.input-row{
+  display:flex;
+  gap:10px;
+  padding:18px;
+  background:white;
+}
+
+input{
+  flex:1;
+  padding:15px;
+  border-radius:20px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+.send-btn{
+  background:#ff5722;
+  color:white;
+  border:none;
+  padding:15px 22px;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.checkout-btn{
+  background:green;
+  color:white;
+  border:none;
+  padding:14px 22px;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-top:12px;
+  width:100%;
+}
+
+@media(max-width:600px){
+  .message{
+    max-width:90%;
+  }
+
+  .input-row{
+    flex-direction:column;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<div class="header">
+
+<h1>🤖 KRUTZ AI Waiter</h1>
+
+<p>Order your food naturally. I'll understand what you want.</p>
+
+</div>
+
+<div class="chat-box" id="chatBox">
+
+<div class="message bot">
+👋 Welcome to KRUTZ Restaurant.<br><br>
+
+You can say things like:<br>
+• 2 Burgers<br>
+• 1 Pizza<br>
+• 2 Coffee<br>
+• Remove Burger<br>
+• Checkout
+</div>
+
+</div>
+
+<div class="quick-buttons">
+
+<button onclick="quickAdd('burger')">
+🍔 Burger
+</button>
+
+<button onclick="quickAdd('pizza')">
+🍕 Pizza
+</button>
+
+<button onclick="quickAdd('coffee')">
+☕ Coffee
+</button>
+
+<button onclick="quickCheckout()">
+🛒 Checkout
+</button>
+
+</div>
+
+<div class="cart">
+
+<h3>🛒 Current Cart</h3>
+
+<div id="cartView">
+
+No items added.
+
+</div>
+
+<button
+class="checkout-btn"
+onclick="quickCheckout()">
+
+Proceed to Checkout
+
+</button>
+
+</div>
+
+<div class="input-row">
+
+<input
+id="userInput"
+type="text"
+placeholder="Type your order here...">
+
+<button
+class="send-btn"
+onclick="sendMessage()">
+
+Send
+
+</button>
+
+</div>
+
+</div>
+<script>
+const prices = {
+  burger: 99,
+  pizza: 149,
+  coffee: 79
+};
+
+const cart = {
+  burger: 0,
+  pizza: 0,
+  coffee: 0
+};
+
+function addMessage(text, type) {
+  const chatBox = document.getElementById("chatBox");
+
+  const div = document.createElement("div");
+  div.className = "message " + type;
+  div.innerHTML = text;
+
+  chatBox.appendChild(div);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function updateCart() {
+  const total =
+    cart.burger * prices.burger +
+    cart.pizza * prices.pizza +
+    cart.coffee * prices.coffee;
+
+  let html = "";
+
+  if (cart.burger > 0) html += `🍔 Burger × ${cart.burger}<br>`;
+  if (cart.pizza > 0) html += `🍕 Pizza × ${cart.pizza}<br>`;
+  if (cart.coffee > 0) html += `☕ Coffee × ${cart.coffee}<br>`;
+
+  if (!html) {
+    html = "No items added.";
+  } else {
+    html += `<br><b>Total: ₹${total}</b>`;
+  }
+
+  document.getElementById("cartView").innerHTML = html;
+}
+
+function wordToNumber(word) {
+  const numbers = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10
+  };
+
+  return numbers[word] || Number(word) || 1;
+}
+
+function extractQty(text, item) {
+  const words = text.toLowerCase().split(/\s+/);
+
+  for (let i = 0; i < words.length; i++) {
+    if (words[i].includes(item)) {
+      const previous = words[i - 1];
+      return wordToNumber(previous);
+    }
+  }
+
+  return text.includes(item) ? 1 : 0;
+}
+
+function parseOrder(text) {
+  const msg = text.toLowerCase();
+
+  if (msg.includes("remove") || msg.includes("delete")) {
+    if (msg.includes("burger")) cart.burger = Math.max(0, cart.burger - 1);
+    if (msg.includes("pizza")) cart.pizza = Math.max(0, cart.pizza - 1);
+    if (msg.includes("coffee")) cart.coffee = Math.max(0, cart.coffee - 1);
+
+    updateCart();
+    return "Removed item from your cart.";
+  }
+
+  if (msg.includes("checkout") || msg.includes("place order")) {
+    quickCheckout();
+    return "Opening checkout...";
+  }
+
+  const burgerQty = extractQty(msg, "burger");
+  const pizzaQty = extractQty(msg, "pizza");
+  const coffeeQty = extractQty(msg, "coffee");
+
+  if (burgerQty > 0) cart.burger += burgerQty;
+  if (pizzaQty > 0) cart.pizza += pizzaQty;
+  if (coffeeQty > 0) cart.coffee += coffeeQty;
+
+  updateCart();
+
+  if (burgerQty || pizzaQty || coffeeQty) {
+    return `Added to your cart:<br>
+    🍔 Burger × ${burgerQty}<br>
+    🍕 Pizza × ${pizzaQty}<br>
+    ☕ Coffee × ${coffeeQty}`;
+  }
+
+  return "I can help you order Burger, Pizza, or Coffee. Try: 2 burgers 1 pizza.";
+}
+
+function sendMessage() {
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  addMessage(text, "user");
+
+  input.value = "";
+
+  setTimeout(function() {
+    const reply = parseOrder(text);
+    addMessage(reply, "bot");
+  }, 400);
+}
+
+function quickAdd(item) {
+  cart[item]++;
+  updateCart();
+
+  addMessage("Add " + item, "user");
+  addMessage(item + " added to cart.", "bot");
+}
+
+function quickCheckout() {
+  const total =
+    cart.burger * prices.burger +
+    cart.pizza * prices.pizza +
+    cart.coffee * prices.coffee;
+
+  if (total === 0) {
+    alert("Please add at least one item.");
+    return;
+  }
+
+  const selectedTable =
+    localStorage.getItem("selectedTable") || "AI Chat";
+
+  const orderData = {
+    burger: cart.burger,
+    pizza: cart.pizza,
+    coffee: cart.coffee,
+    totalAmount: total,
+    tableNumber: selectedTable,
+    orderSource: "AI Chat Waiter"
+  };
+
+  localStorage.setItem("orderData", JSON.stringify(orderData));
+
+  window.location.href = "checkout.html";
+}
+
+document.getElementById("userInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") {
+    sendMessage();
+  }
+});
+
+updateCart();
+</script>
+
+</body>
+</html>

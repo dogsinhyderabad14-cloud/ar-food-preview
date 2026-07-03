@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ AI Copilot</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
+}
+
+body{
+  background:#fff2df;
+  color:#111;
+  min-height:100vh;
+  padding:22px;
+}
+
+.app{
+  max-width:1000px;
+  margin:auto;
+}
+
+.header{
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:28px;
+  border-radius:24px;
+  margin-bottom:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
+}
+
+.header h1{
+  color:#ff9800;
+  font-size:34px;
+  margin-bottom:8px;
+}
+
+.header p{
+  color:#ddd;
+}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:15px;
+  margin-bottom:22px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:18px;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
+  text-align:center;
+}
+
+.card h3{
+  color:#555;
+  margin-bottom:8px;
+}
+
+.card .number{
+  font-size:28px;
+  font-weight:bold;
+  color:#ff9800;
+}
+
+.chat{
+  background:white;
+  border-radius:24px;
+  overflow:hidden;
+  box-shadow:0 8px 28px rgba(0,0,0,.14);
+}
+
+.chat-box{
+  height:390px;
+  overflow-y:auto;
+  background:#fff7ec;
+  padding:22px;
+}
+
+.message{
+  max-width:78%;
+  padding:14px 16px;
+  border-radius:18px;
+  margin-bottom:14px;
+  line-height:1.5;
+}
+
+.bot{
+  background:white;
+  border:1px solid #ead2ad;
+}
+
+.user{
+  background:#111;
+  color:white;
+  margin-left:auto;
+}
+
+.quick{
+  padding:15px 18px;
+  background:white;
+  border-top:1px solid #eee;
+}
+
+.quick button{
+  border:none;
+  background:#ff9800;
+  color:#111;
+  padding:10px 14px;
+  margin:5px;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.input-row{
+  display:flex;
+  gap:10px;
+  padding:18px;
+  background:white;
+  border-top:1px solid #eee;
+}
+
+input{
+  flex:1;
+  padding:15px;
+  border-radius:20px;
+  border:1px solid #ccc;
+  font-size:16px;
+}
+
+.send-btn{
+  border:none;
+  background:#ff5722;
+  color:white;
+  padding:15px 22px;
+  border-radius:20px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+@media(max-width:600px){
+  .input-row{
+    flex-direction:column;
+  }
+
+  .message{
+    max-width:92%;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <h1>🤖 KRUTZ AI Restaurant Copilot</h1>
+    <p>Ask questions about sales, orders, payments, best sellers and kitchen status.</p>
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Revenue</h3>
+      <div class="number">₹<span id="revenue">0</span></div>
+    </div>
+
+    <div class="card">
+      <h3>Orders</h3>
+      <div class="number" id="orders">0</div>
+    </div>
+
+    <div class="card">
+      <h3>Best Seller</h3>
+      <div class="number" id="bestSeller">-</div>
+    </div>
+
+    <div class="card">
+      <h3>Pending</h3>
+      <div class="number" id="pending">0</div>
+    </div>
+  </div>
+
+  <div class="chat">
+
+    <div class="chat-box" id="chatBox">
+      <div class="message bot">
+        👋 Hi Owner. I can answer questions like:<br><br>
+        • What is today's revenue?<br>
+        • Which item sold most?<br>
+        • How many orders are pending?<br>
+        • Which payment method is highest?
+      </div>
+    </div>
+
+    <div class="quick">
+      <button onclick="askQuick('today revenue')">💰 Revenue</button>
+      <button onclick="askQuick('best seller')">🍔 Best Seller</button>
+      <button onclick="askQuick('pending orders')">🔴 Pending</button>
+      <button onclick="askQuick('top payment')">💳 Top Payment</button>
+    </div>
+
+    <div class="input-row">
+      <input id="questionInput" type="text" placeholder="Ask KRUTZ Copilot...">
+      <button class="send-btn" onclick="askCopilot()">Ask</button>
+    </div>
+
+  </div>
+
+</div>
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let analytics = {
+  revenue: 0,
+  orders: 0,
+  pending: 0,
+  burger: 0,
+  pizza: 0,
+  coffee: 0,
+  cash: 0,
+  upi: 0,
+  card: 0
+};
+
+const chatBox = document.getElementById("chatBox");
+
+function bot(text){
+  chatBox.innerHTML += `
+    <div class="message bot">${text}</div>
+  `;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function user(text){
+  chatBox.innerHTML += `
+    <div class="message user">${text}</div>
+  `;
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+onSnapshot(collection(db,"orders"),function(snapshot){
+
+  analytics={
+    revenue:0,
+    orders:0,
+    pending:0,
+    burger:0,
+    pizza:0,
+    coffee:0,
+    cash:0,
+    upi:0,
+    card:0
+  };
+
+  snapshot.forEach(function(doc){
+
+    const order=doc.data();
+
+    analytics.orders++;
+
+    if(order.status==="Pending")
+      analytics.pending++;
+
+    if(order.paymentStatus==="Paid")
+      analytics.revenue+=Number(order.totalAmount||0);
+
+    const items=order.items||{};
+
+    analytics.burger+=Number(items.burger||0);
+    analytics.pizza+=Number(items.pizza||0);
+    analytics.coffee+=Number(items.coffee||0);
+
+    if(order.paymentMethod==="Cash")
+      analytics.cash+=Number(order.totalAmount||0);
+
+    if(order.paymentMethod==="UPI")
+      analytics.upi+=Number(order.totalAmount||0);
+
+    if(order.paymentMethod==="Card")
+      analytics.card+=Number(order.totalAmount||0);
+
+  });
+
+  document.getElementById("revenue").innerText=analytics.revenue;
+  document.getElementById("orders").innerText=analytics.orders;
+  document.getElementById("pending").innerText=analytics.pending;
+
+  let best="Burger";
+
+  if(analytics.pizza>=analytics.burger && analytics.pizza>=analytics.coffee)
+    best="Pizza";
+
+  if(analytics.coffee>=analytics.burger && analytics.coffee>=analytics.pizza)
+    best="Coffee";
+
+  document.getElementById("bestSeller").innerText=best;
+
+});
+
+function answer(question){
+
+  const q=question.toLowerCase();
+
+  if(q.includes("revenue"))
+    return "💰 Today's revenue is <b>₹"+analytics.revenue+"</b>.";
+
+  if(q.includes("best"))
+    return "🏆 Best selling item is <b>"+document.getElementById("bestSeller").innerText+"</b>.";
+
+  if(q.includes("pending"))
+    return "🔴 Pending orders: <b>"+analytics.pending+"</b>.";
+
+  if(q.includes("payment")){
+
+    let top="Cash";
+
+    if(analytics.upi>=analytics.cash && analytics.upi>=analytics.card)
+      top="UPI";
+
+    if(analytics.card>=analytics.cash && analytics.card>=analytics.upi)
+      top="Card";
+
+    return "💳 Highest payment method is <b>"+top+"</b>.";
+  }
+
+  if(q.includes("orders"))
+    return "📦 Total orders: <b>"+analytics.orders+"</b>.";
+
+  return "🤖 I can answer about revenue, orders, best seller, pending orders and payment methods.";
+}
+
+window.askQuick=function(text){
+
+  user(text);
+
+  setTimeout(function(){
+    bot(answer(text));
+  },300);
+
+};
+
+window.askCopilot=function(){
+
+  const input=document.getElementById("questionInput");
+
+  const text=input.value.trim();
+
+  if(!text) return;
+
+  user(text);
+
+  input.value="";
+
+  setTimeout(function(){
+    bot(answer(text));
+  },300);
+
+};
+
+document.getElementById("questionInput").addEventListener("keydown",function(e){
+
+  if(e.key==="Enter")
+    askCopilot();
+
+});
+</script>
+
+</body>
+</html>
