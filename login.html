@@ -3,200 +3,437 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>KRUTZ Restaurant Login</title>
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
 body{
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:#fff2df;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at top left, rgba(255,152,0,.25), transparent 35%),
+    linear-gradient(135deg,#080808,#171717,#252525);
+  color:white;
+  padding:20px;
+}
+
+.login-wrapper{
+  width:100%;
+  max-width:1050px;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  background:rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:32px;
+  overflow:hidden;
+  box-shadow:0 25px 80px rgba(0,0,0,.55);
+  backdrop-filter:blur(18px);
+  animation:fadeIn .7s ease;
+}
+
+.brand-panel{
+  padding:50px;
+  background:
+    linear-gradient(135deg,rgba(255,152,0,.18),rgba(255,255,255,.04));
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:620px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.logo-icon{
+  width:58px;
+  height:58px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  display:grid;
+  place-items:center;
+  font-size:30px;
+  box-shadow:0 10px 30px rgba(255,152,0,.35);
+}
+
+.logo-text h2{
+  font-size:30px;
+  letter-spacing:1px;
+}
+
+.logo-text p{
+  color:#d7d7d7;
+  margin-top:4px;
+  font-size:13px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+}
+
+.hero h1{
+  font-size:48px;
+  line-height:1.1;
+  margin-bottom:18px;
+}
+
+.hero p{
+  color:#d8d8d8;
+  font-size:17px;
+  line-height:1.6;
+  max-width:480px;
+}
+
+.features{
+  margin-top:28px;
+  display:grid;
+  gap:12px;
+}
+
+.feature{
+  background:rgba(255,255,255,.08);
+  padding:14px 16px;
+  border-radius:18px;
+  color:#f4f4f4;
+  border:1px solid rgba(255,255,255,.08);
+}
+
+.clock-box{
+  margin-top:30px;
+  background:rgba(0,0,0,.25);
+  padding:18px;
+  border-radius:20px;
+  border:1px solid rgba(255,255,255,.1);
+}
+
+.clock-box strong{
+  display:block;
+  font-size:24px;
+  color:#ff9800;
+}
+
+.clock-box span{
+  color:#ddd;
+  font-size:14px;
+}
+
+.login-panel{
+  padding:50px 44px;
+  background:rgba(8,8,8,.72);
+  display:flex;
+  align-items:center;
 }
 
 .login-box{
-
-width:420px;
-background:white;
-padding:40px;
-border-radius:20px;
-box-shadow:0 8px 25px rgba(0,0,0,.2);
-
+  width:100%;
 }
 
-h1{
-text-align:center;
-margin-bottom:10px;
+.login-box h1{
+  font-size:34px;
+  margin-bottom:8px;
 }
 
 .subtitle{
-text-align:center;
-color:#666;
-margin-bottom:30px;
+  color:#bbb;
+  margin-bottom:30px;
+  line-height:1.5;
+}
+
+.role-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin-bottom:24px;
+}
+
+.role-chip{
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.07);
+  color:white;
+  padding:13px;
+  border-radius:16px;
+  cursor:pointer;
+  font-weight:bold;
+  text-align:center;
+  transition:.25s;
+}
+
+.role-chip:hover,
+.role-chip.active{
+  background:#ff9800;
+  color:#111;
+  transform:translateY(-2px);
 }
 
 input{
-
-width:100%;
-padding:14px;
-margin-bottom:18px;
-font-size:17px;
-border-radius:12px;
-border:1px solid #ccc;
-
+  width:100%;
+  padding:16px;
+  margin-bottom:16px;
+  font-size:16px;
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,.14);
+  outline:none;
+  background:rgba(255,255,255,.09);
+  color:white;
 }
 
-button{
-
-width:100%;
-padding:15px;
-background:#111;
-color:white;
-border:none;
-border-radius:30px;
-font-size:18px;
-cursor:pointer;
-
+input::placeholder{
+  color:#aaa;
 }
 
-button:hover{
+.login-btn{
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:white;
+  border:none;
+  border-radius:999px;
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.25s;
+  box-shadow:0 12px 28px rgba(255,152,0,.28);
+}
 
-background:#333;
-
+.login-btn:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 35px rgba(255,152,0,.42);
 }
 
 .demo{
-
-margin-top:25px;
-background:#f7f7f7;
-padding:15px;
-border-radius:12px;
-font-size:14px;
-
+  margin-top:24px;
+  background:rgba(255,255,255,.07);
+  padding:16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.1);
+  font-size:14px;
+  color:#ddd;
 }
 
 .demo h3{
-
-margin-bottom:10px;
-
+  margin-bottom:10px;
+  color:#ff9800;
 }
 
 .demo p{
-
-margin:4px 0;
-
+  margin:6px 0;
 }
 
+.footer-note{
+  margin-top:20px;
+  color:#888;
+  font-size:13px;
+  text-align:center;
+}
+
+@keyframes fadeIn{
+  from{
+    opacity:0;
+    transform:translateY(25px);
+  }
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@media(max-width:850px){
+  .login-wrapper{
+    grid-template-columns:1fr;
+  }
+
+  .brand-panel{
+    min-height:auto;
+    padding:32px;
+    gap:32px;
+  }
+
+  .hero h1{
+    font-size:36px;
+  }
+
+  .login-panel{
+    padding:32px;
+  }
+}
+
+@media(max-width:480px){
+  .role-grid{
+    grid-template-columns:1fr;
+  }
+}
 </style>
-
 </head>
-
 <body>
 
-<div class="login-box">
+<div class="login-wrapper">
 
-<h1>🍽 KRUTZ Restaurant OS</h1>
+  <section class="brand-panel">
 
-<p class="subtitle">
-Staff Login
-</p>
+    <div class="logo">
+      <div class="logo-icon">🍽</div>
 
-<input
-id="username"
-type="text"
-placeholder="Username">
+      <div class="logo-text">
+        <h2>KRUTZ</h2>
+        <p>Restaurant OS</p>
+      </div>
+    </div>
 
-<input
-id="password"
-type="password"
-placeholder="Password">
+    <div class="hero">
+      <h1>Run your restaurant from one powerful dashboard.</h1>
 
-<button onclick="login()">
-Login
-</button>
+      <p>
+        Manage QR ordering, kitchen flow, waiters, cashier billing,
+        tables, reservations, inventory and live analytics in one system.
+      </p>
 
-<div class="demo">
+      <div class="features">
+        <div class="feature">✅ 3D AR Food Menu</div>
+        <div class="feature">✅ Kitchen, Waiter & Cashier Dashboards</div>
+        <div class="feature">✅ Live Orders, Requests & Analytics</div>
+        <div class="feature">✅ Voice Ordering & Smart Restaurant Tools</div>
+      </div>
 
-<h3>Demo Accounts</h3>
+      <div class="clock-box">
+        <strong id="liveTime">--:--</strong>
+        <span id="liveDate">Loading date...</span>
+      </div>
+    </div>
 
-<p>👨‍🍳 kitchen / kitchen123</p>
+    <div style="color:#999;font-size:13px;">
+      © KRUTZ Restaurant OS · MVP v1
+    </div>
 
-<p>🧑‍🍳 waiter / waiter123</p>
+  </section>
 
-<p>🧾 cashier / cashier123</p>
+  <section class="login-panel">
 
-<p>👨‍💼 manager / manager123</p>
+    <div class="login-box">
 
-<p>👑 owner / owner123</p>
+      <h1>Staff Login</h1>
+
+      <p class="subtitle">
+        Select your role or enter your login details to continue.
+      </p>
+
+      <div class="role-grid">
+        <div class="role-chip" onclick="fillDemo('kitchen','kitchen123',this)">👨‍🍳 Kitchen</div>
+        <div class="role-chip" onclick="fillDemo('waiter','waiter123',this)">🧑‍🍳 Waiter</div>
+        <div class="role-chip" onclick="fillDemo('cashier','cashier123',this)">🧾 Cashier</div>
+        <div class="role-chip" onclick="fillDemo('manager','manager123',this)">👨‍💼 Manager</div>
+        <div class="role-chip" onclick="fillDemo('owner','owner123',this)">👑 Owner</div>
+      </div>
+
+      <input
+        id="username"
+        type="text"
+        placeholder="Username"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+      >
+
+      <button class="login-btn" onclick="login()">
+        Login to KRUTZ
+      </button>
+
+      <div class="demo">
+        <h3>Demo Accounts</h3>
+        <p>👨‍🍳 kitchen / kitchen123</p>
+        <p>🧑‍🍳 waiter / waiter123</p>
+        <p>🧾 cashier / cashier123</p>
+        <p>👨‍💼 manager / manager123</p>
+        <p>👑 owner / owner123</p>
+      </div>
+
+      <p class="footer-note">
+        Demo login only. Firebase Authentication will be added in production.
+      </p>
+
+    </div>
+
+  </section>
 
 </div>
-
-</div>
-
-</div>
-
 <script>
+function fillDemo(username, password, element) {
+  document.getElementById("username").value = username;
+  document.getElementById("password").value = password;
 
-function login(){
+  document.querySelectorAll(".role-chip").forEach(chip => {
+    chip.classList.remove("active");
+  });
 
-const username=document.getElementById("username").value.toLowerCase();
-
-const password=document.getElementById("password").value;
-
-if(username==="kitchen" && password==="kitchen123"){
-
-localStorage.setItem("role","kitchen");
-
-window.location.href="kitchen.html";
+  element.classList.add("active");
 }
 
-else if(username==="cashier" && password==="cashier123"){
+function login() {
+  const username = document.getElementById("username").value.toLowerCase().trim();
+  const password = document.getElementById("password").value;
 
-localStorage.setItem("role","cashier");
+  if (username === "kitchen" && password === "kitchen123") {
+    localStorage.setItem("role", "kitchen");
+    window.location.href = "kitchen.html";
+  }
 
-window.location.href="cashier.html";
+  else if (username === "waiter" && password === "waiter123") {
+    localStorage.setItem("role", "waiter");
+    window.location.href = "waiter.html";
+  }
 
-}
-else if(username==="waiter" && password==="waiter123"){
+  else if (username === "cashier" && password === "cashier123") {
+    localStorage.setItem("role", "cashier");
+    window.location.href = "cashier.html";
+  }
 
-localStorage.setItem("role","waiter");
+  else if (username === "manager" && password === "manager123") {
+    localStorage.setItem("role", "manager");
+    window.location.href = "os.html";
+  }
 
-window.location.href="waiter.html";
+  else if (username === "owner" && password === "owner123") {
+    localStorage.setItem("role", "owner");
+    window.location.href = "owner.html";
+  }
 
-}
-
-else if(username==="manager" && password==="manager123"){
-
-localStorage.setItem("role","manager");
-
-window.location.href="os.html";
-
-}
-
-else if(username==="owner" && password==="owner123"){
-
-localStorage.setItem("role","owner");
-
-window.location.href="owner.html";
-
-}
-
-else{
-
-alert("Wrong Username or Password");
-
+  else {
+    alert("Wrong Username or Password");
+  }
 }
 
+function updateClock() {
+  const now = new Date();
+
+  document.getElementById("liveTime").innerText =
+    now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+
+  document.getElementById("liveDate").innerText =
+    now.toLocaleDateString([], {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
 }
 
+setInterval(updateClock, 1000);
+updateClock();
 </script>
 
 </body>

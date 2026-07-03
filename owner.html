@@ -7,113 +7,265 @@
 <title>KRUTZ Owner Dashboard</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  color: #111;
-  padding: 25px;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
-.header {
-  background: #111;
-  color: white;
-  padding: 25px;
-  border-radius: 20px;
-  text-align: center;
-  margin-bottom: 25px;
+body{
+  background:#f4f4f4;
+  color:#111;
+  padding:25px;
 }
 
-.header h1 {
-  color: #ff9800;
-  margin: 0;
+.header{
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:30px;
+  border-radius:24px;
+  margin-bottom:25px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 18px;
-  margin-bottom: 25px;
+.header h1{
+  color:#ff9800;
+  font-size:36px;
+  margin-bottom:8px;
 }
 
-.card {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+.header p{
+  color:#ddd;
 }
 
-.card h3 {
-  margin-top: 0;
-  color: #555;
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+  margin-bottom:25px;
 }
 
-.number {
-  font-size: 30px;
-  font-weight: bold;
+.card{
+  background:white;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+  border-left:6px solid #ff9800;
 }
 
-.section {
-  background: white;
-  border-radius: 18px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+.card h3{
+  color:#555;
+  margin-bottom:12px;
+  font-size:16px;
 }
 
-.alert {
-  background: #fff2df;
-  padding: 12px;
-  border-radius: 12px;
-  margin: 8px 0;
+.number{
+  font-size:32px;
+  font-weight:bold;
+}
+
+.section{
+  background:white;
+  border-radius:22px;
+  padding:24px;
+  margin-bottom:22px;
+  box-shadow:0 6px 18px rgba(0,0,0,.12);
+}
+
+.section h2{
+  margin-bottom:16px;
+}
+
+.grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+}
+
+.alert{
+  background:#fff7ec;
+  padding:14px;
+  border-radius:14px;
+  margin:10px 0;
+  border-left:5px solid #ff9800;
+  font-weight:bold;
+}
+
+.progress-row{
+  margin:14px 0;
+}
+
+.progress-label{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:6px;
+  font-weight:bold;
+}
+
+.progress-bar{
+  background:#eee;
+  height:14px;
+  border-radius:20px;
+  overflow:hidden;
+}
+
+.progress-fill{
+  height:100%;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  width:0%;
+}
+
+@media(max-width:800px){
+  body{
+    padding:15px;
+  }
+
+  .grid-2{
+    grid-template-columns:1fr;
+  }
+
+  .header h1{
+    font-size:28px;
+  }
 }
 </style>
 </head>
-
 <body>
 
 <div class="header">
   <h1>👑 KRUTZ Owner Dashboard</h1>
-  <p>Live business overview and restaurant intelligence</p>
+  <p>Real-time Restaurant Intelligence & Business Analytics</p>
 </div>
 
 <div class="cards">
-  <div class="card"><h3>Total Revenue</h3><div class="number">₹<span id="totalRevenue">0</span></div></div>
-  <div class="card"><h3>Total Orders</h3><div class="number" id="totalOrders">0</div></div>
-  <div class="card"><h3>Paid Orders</h3><div class="number" id="paidOrders">0</div></div>
-  <div class="card"><h3>Unpaid Orders</h3><div class="number" id="unpaidOrders">0</div></div>
-  <div class="card"><h3>Reservations</h3><div class="number" id="reservationCount">0</div></div>
-  <div class="card"><h3>Average Order</h3><div class="number">₹<span id="avgOrder">0</span></div></div>
+
+  <div class="card">
+    <h3>💰 Today's Revenue</h3>
+    <div class="number">₹<span id="totalRevenue">0</span></div>
+  </div>
+
+  <div class="card">
+    <h3>🧾 Total Orders</h3>
+    <div class="number" id="totalOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>✅ Paid Orders</h3>
+    <div class="number" id="paidOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>⏳ Pending Payments</h3>
+    <div class="number" id="unpaidOrders">0</div>
+  </div>
+
+  <div class="card">
+    <h3>📅 Reservations</h3>
+    <div class="number" id="reservationCount">0</div>
+  </div>
+
+  <div class="card">
+    <h3>🛒 Average Order</h3>
+    <div class="number">₹<span id="avgOrder">0</span></div>
+  </div>
+
 </div>
 
-<div class="cards">
-  <div class="card"><h3>Cash Revenue</h3><div class="number">₹<span id="cashRevenue">0</span></div></div>
-  <div class="card"><h3>UPI Revenue</h3><div class="number">₹<span id="upiRevenue">0</span></div></div>
-  <div class="card"><h3>Card Revenue</h3><div class="number">₹<span id="cardRevenue">0</span></div></div>
+<div class="grid-2">
+
+<div class="section">
+
+<h2>💳 Revenue Breakdown</h2>
+
+<p>Cash Revenue</p>
+
+<div class="progress-row">
+<div class="progress-label">
+<span>₹<span id="cashRevenue">0</span></span>
+<span id="cashPercent">0%</span>
+</div>
+
+<div class="progress-bar">
+<div class="progress-fill" id="cashBar"></div>
+</div>
+</div>
+
+<p>UPI Revenue</p>
+
+<div class="progress-row">
+<div class="progress-label">
+<span>₹<span id="upiRevenue">0</span></span>
+<span id="upiPercent">0%</span>
+</div>
+
+<div class="progress-bar">
+<div class="progress-fill" id="upiBar"></div>
+</div>
+</div>
+
+<p>Card Revenue</p>
+
+<div class="progress-row">
+<div class="progress-label">
+<span>₹<span id="cardRevenue">0</span></span>
+<span id="cardPercent">0%</span>
+</div>
+
+<div class="progress-bar">
+<div class="progress-fill" id="cardBar"></div>
+</div>
+</div>
+
 </div>
 
 <div class="section">
-  <h2>🍔 Best Sellers</h2>
-  <p>Burger Sold: <b id="burgerSold">0</b></p>
-  <p>Pizza Sold: <b id="pizzaSold">0</b></p>
-  <p>Coffee Sold: <b id="coffeeSold">0</b></p>
+
+<h2>🍔 Best Selling Items</h2>
+
+<p>🍔 Burger Sold : <b id="burgerSold">0</b></p>
+
+<p>🍕 Pizza Sold : <b id="pizzaSold">0</b></p>
+
+<p>☕ Coffee Sold : <b id="coffeeSold">0</b></p>
+
+<hr style="margin:18px 0">
+
+<h2>👨‍🍳 Kitchen Status</h2>
+
+<p>🔴 Pending : <b id="pendingOrders">0</b></p>
+
+<p>🟠 Preparing : <b id="preparingOrders">0</b></p>
+
+<p>🟢 Ready : <b id="readyOrders">0</b></p>
+
+<p>✅ Delivered : <b id="deliveredOrders">0</b></p>
+
+</div>
+
 </div>
 
 <div class="section">
-  <h2>👨‍🍳 Kitchen Status</h2>
-  <p>Pending: <b id="pendingOrders">0</b></p>
-  <p>Preparing: <b id="preparingOrders">0</b></p>
-  <p>Ready: <b id="readyOrders">0</b></p>
-  <p>Delivered: <b id="deliveredOrders">0</b></p>
+
+<h2>🤖 KRUTZ AI Business Copilot</h2>
+
+<div class="alert" id="aiInsight1">
+Analyzing today's restaurant performance...
 </div>
 
-<div class="section">
-  <h2>🤖 AI Restaurant Copilot</h2>
-  <div class="alert" id="aiInsight1">Analyzing restaurant data...</div>
-  <div class="alert" id="aiInsight2">Checking best sellers...</div>
-  <div class="alert" id="aiInsight3">Checking payment method...</div>
+<div class="alert" id="aiInsight2">
+Finding today's best selling item...
 </div>
 
+<div class="alert" id="aiInsight3">
+Checking preferred payment method...
+</div>
+
+<div class="alert" id="aiInsight4">
+Monitoring operational efficiency...
+</div>
+
+</div>
 <script type="module">
 import { db } from "./firebase.js";
 
@@ -122,7 +274,20 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+function setText(id, value) {
+  document.getElementById(id).innerText = value;
+}
+
+function setBar(id, percent) {
+  document.getElementById(id).style.width = percent + "%";
+}
+
+function money(value) {
+  return Number(value || 0).toLocaleString("en-IN");
+}
+
 onSnapshot(collection(db, "orders"), function(snapshot) {
+
   let totalRevenue = 0;
   let totalOrders = 0;
   let paidOrders = 0;
@@ -143,6 +308,7 @@ onSnapshot(collection(db, "orders"), function(snapshot) {
   let delivered = 0;
 
   snapshot.forEach(function(orderDoc) {
+
     const order = orderDoc.data();
     const items = order.items || {};
     const amount = Number(order.totalAmount || 0);
@@ -151,9 +317,12 @@ onSnapshot(collection(db, "orders"), function(snapshot) {
 
     totalOrders++;
 
-    if (order.orderType === "Pre-order") reservationCount++;
+    if (order.orderType === "Pre-order") {
+      reservationCount++;
+    }
 
     if (paymentStatus === "Paid") {
+
       paidOrders++;
       totalRevenue += amount;
 
@@ -161,59 +330,112 @@ onSnapshot(collection(db, "orders"), function(snapshot) {
       pizzaSold += Number(items.pizza || 0);
       coffeeSold += Number(items.coffee || 0);
 
-      if (order.paymentMethod === "Cash") cashRevenue += amount;
-      if (order.paymentMethod === "UPI") upiRevenue += amount;
-      if (order.paymentMethod === "Card") cardRevenue += amount;
+      if (order.paymentMethod === "Cash") {
+        cashRevenue += amount;
+      }
+
+      if (order.paymentMethod === "UPI") {
+        upiRevenue += amount;
+      }
+
+      if (order.paymentMethod === "Card") {
+        cardRevenue += amount;
+      }
+
     } else {
       unpaidOrders++;
     }
 
     if (status === "Pending") pending++;
-    else if (status === "Preparing") preparing++;
-    else if (status === "Ready") ready++;
-    else if (status === "Delivered") delivered++;
+    if (status === "Preparing") preparing++;
+    if (status === "Ready") ready++;
+    if (status === "Delivered") delivered++;
   });
 
-  const avgOrder = paidOrders > 0 ? Math.round(totalRevenue / paidOrders) : 0;
+  const avgOrder =
+    paidOrders > 0 ? Math.round(totalRevenue / paidOrders) : 0;
 
-  document.getElementById("totalRevenue").innerText = totalRevenue;
-  document.getElementById("totalOrders").innerText = totalOrders;
-  document.getElementById("paidOrders").innerText = paidOrders;
-  document.getElementById("unpaidOrders").innerText = unpaidOrders;
-  document.getElementById("reservationCount").innerText = reservationCount;
-  document.getElementById("avgOrder").innerText = avgOrder;
+  setText("totalRevenue", money(totalRevenue));
+  setText("totalOrders", totalOrders);
+  setText("paidOrders", paidOrders);
+  setText("unpaidOrders", unpaidOrders);
+  setText("reservationCount", reservationCount);
+  setText("avgOrder", money(avgOrder));
 
-  document.getElementById("cashRevenue").innerText = cashRevenue;
-  document.getElementById("upiRevenue").innerText = upiRevenue;
-  document.getElementById("cardRevenue").innerText = cardRevenue;
+  setText("cashRevenue", money(cashRevenue));
+  setText("upiRevenue", money(upiRevenue));
+  setText("cardRevenue", money(cardRevenue));
 
-  document.getElementById("burgerSold").innerText = burgerSold;
-  document.getElementById("pizzaSold").innerText = pizzaSold;
-  document.getElementById("coffeeSold").innerText = coffeeSold;
+  setText("burgerSold", burgerSold);
+  setText("pizzaSold", pizzaSold);
+  setText("coffeeSold", coffeeSold);
 
-  document.getElementById("pendingOrders").innerText = pending;
-  document.getElementById("preparingOrders").innerText = preparing;
-  document.getElementById("readyOrders").innerText = ready;
-  document.getElementById("deliveredOrders").innerText = delivered;
+  setText("pendingOrders", pending);
+  setText("preparingOrders", preparing);
+  setText("readyOrders", ready);
+  setText("deliveredOrders", delivered);
 
-  document.getElementById("aiInsight1").innerText =
-    "Today's paid revenue is ₹" + totalRevenue + ".";
+  const cashPercent =
+    totalRevenue > 0 ? Math.round((cashRevenue / totalRevenue) * 100) : 0;
 
-  document.getElementById("aiInsight2").innerText =
-    "Best seller: " +
-    (burgerSold >= pizzaSold && burgerSold >= coffeeSold
+  const upiPercent =
+    totalRevenue > 0 ? Math.round((upiRevenue / totalRevenue) * 100) : 0;
+
+  const cardPercent =
+    totalRevenue > 0 ? Math.round((cardRevenue / totalRevenue) * 100) : 0;
+
+  setText("cashPercent", cashPercent + "%");
+  setText("upiPercent", upiPercent + "%");
+  setText("cardPercent", cardPercent + "%");
+
+  setBar("cashBar", cashPercent);
+  setBar("upiBar", upiPercent);
+  setBar("cardBar", cardPercent);
+
+  const bestSeller =
+    burgerSold >= pizzaSold && burgerSold >= coffeeSold
       ? "Burger"
       : pizzaSold >= coffeeSold
       ? "Pizza"
-      : "Coffee");
+      : "Coffee";
 
-  document.getElementById("aiInsight3").innerText =
-    "Top payment method: " +
-    (cashRevenue >= upiRevenue && cashRevenue >= cardRevenue
+  const topPayment =
+    cashRevenue >= upiRevenue && cashRevenue >= cardRevenue
       ? "Cash"
       : upiRevenue >= cardRevenue
       ? "UPI"
-      : "Card");
+      : "Card";
+
+  setText(
+    "aiInsight1",
+    "Today's paid revenue is ₹" + money(totalRevenue) +
+    " from " + paidOrders + " paid orders."
+  );
+
+  setText(
+    "aiInsight2",
+    "Best seller today is " + bestSeller +
+    ". Consider promoting combo offers around it."
+  );
+
+  setText(
+    "aiInsight3",
+    "Most preferred payment method is " + topPayment +
+    ". Keep this payment flow smooth for customers."
+  );
+
+  if (pending + preparing > ready + delivered) {
+    setText(
+      "aiInsight4",
+      "Kitchen load is high. Manager should monitor pending and preparing orders."
+    );
+  } else {
+    setText(
+      "aiInsight4",
+      "Operations look stable. Kitchen flow is currently under control."
+    );
+  }
+
 });
 </script>
 

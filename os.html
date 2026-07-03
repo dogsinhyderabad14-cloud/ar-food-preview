@@ -4,13 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>KRUTZ Restaurant OS v2</title>
+<title>KRUTZ Restaurant OS</title>
 
 <style>
-body {
+* {
   margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
-  background: #0f0f0f;
+}
+
+body {
+  background: #080808;
+  color: #111;
 }
 
 .app {
@@ -20,48 +26,71 @@ body {
 }
 
 .sidebar {
-  width: 280px;
-  background: #0b0b0b;
+  width: 300px;
+  background: linear-gradient(180deg, #080808, #151515);
   color: white;
-  padding: 22px;
+  padding: 24px;
   overflow-y: auto;
-  border-right: 1px solid #222;
+  border-right: 1px solid rgba(255,255,255,.08);
 }
 
 .logo {
+  display: flex;
+  gap: 14px;
+  align-items: center;
   margin-bottom: 28px;
+}
+
+.logo-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  display: grid;
+  place-items: center;
+  font-size: 28px;
+  box-shadow: 0 12px 30px rgba(255,152,0,.35);
 }
 
 .logo h2 {
   color: #ff9800;
-  margin: 0;
   font-size: 28px;
 }
 
 .logo p {
   color: #aaa;
   font-size: 13px;
-  margin-top: 6px;
+  margin-top: 4px;
+}
+
+.section-label {
+  color: #777;
+  font-size: 12px;
+  margin: 18px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
 .nav-btn {
   width: 100%;
   padding: 14px 16px;
-  margin: 6px 0;
+  margin: 5px 0;
   border: none;
-  border-radius: 14px;
+  border-radius: 16px;
   text-align: left;
   cursor: pointer;
   font-weight: bold;
   background: transparent;
   color: #ddd;
   font-size: 15px;
+  transition: .25s;
 }
 
 .nav-btn:hover,
 .nav-btn.active {
   background: linear-gradient(135deg, #ff9800, #ff5722);
   color: #111;
+  transform: translateX(4px);
 }
 
 .main {
@@ -72,17 +101,18 @@ body {
 }
 
 .topbar {
-  height: 76px;
-  background: white;
-  box-shadow: 0 4px 18px rgba(0,0,0,0.08);
+  height: 82px;
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 6px 22px rgba(0,0,0,.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 28px;
+  z-index: 5;
 }
 
 .topbar h2 {
-  margin: 0;
+  font-size: 26px;
 }
 
 .top-actions {
@@ -91,19 +121,30 @@ body {
   align-items: center;
 }
 
-.clock {
-  background: #f4f4f4;
-  padding: 10px 16px;
-  border-radius: 20px;
+.clock,
+.role {
+  padding: 11px 16px;
+  border-radius: 999px;
   font-weight: bold;
+}
+
+.clock {
+  background: #f1f1f1;
 }
 
 .role {
   background: #111;
   color: white;
-  padding: 10px 16px;
-  border-radius: 20px;
+}
+
+.logout {
+  background: #ff5722;
+  color: white;
+  border: none;
+  padding: 11px 16px;
+  border-radius: 999px;
   font-weight: bold;
+  cursor: pointer;
 }
 
 iframe {
@@ -113,93 +154,150 @@ iframe {
   background: #f4f4f4;
 }
 
-@media(max-width: 800px) {
+@media(max-width: 850px) {
   .app {
     flex-direction: column;
   }
 
   .sidebar {
-    width: auto;
-    max-height: 330px;
+    width: 100%;
+    max-height: 350px;
   }
 
   .topbar {
     height: auto;
     padding: 16px;
-    gap: 10px;
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+  }
+
+  .top-actions {
+    flex-wrap: wrap;
   }
 }
 </style>
 </head>
-
 <body>
 
 <div class="app">
 
   <aside class="sidebar">
+
     <div class="logo">
-      <h2>KRUTZ OS</h2>
-      <p>Restaurant Operating System v2.0</p>
+      <div class="logo-icon">🍽</div>
+      <div>
+        <h2>KRUTZ OS</h2>
+        <p>Restaurant Operating System</p>
+      </div>
     </div>
 
+    <div class="section-label">Control Center</div>
     <button class="nav-btn active" onclick="openPage('owner.html', this, 'Owner Dashboard')">👑 Owner Dashboard</button>
+    <button class="nav-btn" onclick="openPage('dashboard.html', this, 'Manager Dashboard')">📊 Manager Dashboard</button>
+
+    <div class="section-label">Operations</div>
     <button class="nav-btn" onclick="openPage('kitchen.html', this, 'Kitchen Display')">👨‍🍳 Kitchen</button>
-    <button class="nav-btn" onclick="openPage('tables.html', this, 'Table Management')">🪑 Tables</button>
     <button class="nav-btn" onclick="openPage('waiter.html', this, 'Waiter Dashboard')">🧑‍🍳 Waiter</button>
     <button class="nav-btn" onclick="openPage('cashier.html', this, 'Cashier Pro')">🧾 Cashier</button>
-    <button class="nav-btn" onclick="openPage('reservations.html', this, 'Reservations')">📅 Reservations</button>
+    <button class="nav-btn" onclick="openPage('tables.html', this, 'Table Management')">🪑 Tables</button>
+
+    <div class="section-label">Customer Experience</div>
+    <button class="nav-btn" onclick="openPage('index.html', this, 'Customer AR Menu')">📱 Customer Menu</button>
+    <button class="nav-btn" onclick="openPage('ai-order.html', this, 'AI Waiter')">🤖 AI Waiter</button>
     <button class="nav-btn" onclick="openPage('requests.html', this, 'Customer Requests')">🔔 Requests</button>
-    <button class="nav-btn" onclick="openPage('notifications.html', this, 'Live Notifications')">🔔 Notifications</button>
     <button class="nav-btn" onclick="openPage('feedback.html', this, 'Customer Feedback')">⭐ Feedback</button>
+
+    <div class="section-label">Management</div>
+    <button class="nav-btn" onclick="openPage('reservations.html', this, 'Reservations')">📅 Reservations</button>
     <button class="nav-btn" onclick="openPage('inventory.html', this, 'Inventory')">📦 Inventory</button>
     <button class="nav-btn" onclick="openPage('menu.html', this, 'Menu Management')">🍔 Menu</button>
     <button class="nav-btn" onclick="openPage('staff-management.html', this, 'Staff Management')">👥 Staff</button>
-    <button class="nav-btn" onclick="openPage('index.html', this, 'Customer AR Menu')">📱 Customer Menu</button>
-    <button class="nav-btn" onclick="openPage('ai-order.html', this, 'AI Waiter')">🤖 AI Waiter</button>
+    <button class="nav-btn" onclick="openPage('notifications.html', this, 'Live Notifications')">🔔 Notifications</button>
+
   </aside>
 
   <main class="main">
+
     <div class="topbar">
-      <h2 id="pageTitle">Owner Dashboard</h2>
+      <div>
+        <h2 id="pageTitle">Owner Dashboard</h2>
+        <p style="color:#777;margin-top:4px;">Live KRUTZ Restaurant OS workspace</p>
+      </div>
 
       <div class="top-actions">
         <div class="clock" id="clock">--:--</div>
-        <div class="role">Admin Mode</div>
+        <div class="role" id="roleBadge">Admin Mode</div>
+        <button class="logout" onclick="logout()">Logout</button>
       </div>
     </div>
 
     <iframe id="screen" src="owner.html"></iframe>
+
   </main>
 
 </div>
-
 <script>
-function openPage(page, button, title) {
-  document.getElementById("screen").src = page;
-  document.getElementById("pageTitle").innerText = title;
 
-  document.querySelectorAll(".nav-btn").forEach(btn => {
-    btn.classList.remove("active");
-  });
+const role = localStorage.getItem("role") || "Admin";
 
-  button.classList.add("active");
+document.getElementById("roleBadge").innerText =
+role.charAt(0).toUpperCase() + role.slice(1);
+
+function openPage(page, button, title){
+
+document.getElementById("screen").src=page;
+
+document.getElementById("pageTitle").innerText=title;
+
+document.querySelectorAll(".nav-btn").forEach(btn=>{
+
+btn.classList.remove("active");
+
+});
+
+button.classList.add("active");
+
 }
 
-function updateClock() {
-  const now = new Date();
+function updateClock(){
 
-  document.getElementById("clock").innerText =
-    now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
+const now=new Date();
+
+document.getElementById("clock").innerText=
+now.toLocaleTimeString([],{
+
+hour:"2-digit",
+minute:"2-digit",
+second:"2-digit"
+
+});
+
 }
 
-setInterval(updateClock, 1000);
+setInterval(updateClock,1000);
+
 updateClock();
+
+function logout(){
+
+if(confirm("Logout from KRUTZ Restaurant OS?")){
+
+localStorage.removeItem("role");
+
+window.location.href="login.html";
+
+}
+
+}
+
+// Prevent iframe caching
+window.addEventListener("load",()=>{
+
+document.getElementById("screen").src="owner.html";
+
+});
+
 </script>
 
 </body>
