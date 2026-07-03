@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Table Management</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.stat-card h3 {
+  margin: 0 0 10px;
+  color: #555;
+}
+
+.stat-card .number {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.floor {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 18px;
+}
+
+.table-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  transition: 0.2s;
+}
+
+.table-card:hover {
+  transform: scale(1.03);
+}
+
+.table-card h2 {
+  margin: 0;
+  font-size: 28px;
+}
+
+.status {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.available {
+  border-top: 8px solid green;
+}
+
+.preparing {
+  border-top: 8px solid orange;
+}
+
+.dining {
+  border-top: 8px solid #ff5722;
+}
+
+.reserved {
+  border-top: 8px solid #2196f3;
+}
+
+.payment {
+  border-top: 8px solid red;
+}
+
+.cleaning {
+  border-top: 8px solid #555;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.modal-content {
+  background: white;
+  color: #111;
+  border-radius: 22px;
+  max-width: 450px;
+  width: 100%;
+  padding: 25px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+  margin-top: 0;
+}
+
+.close-btn {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 20px;
+  cursor: pointer;
+  float: right;
+}
+
+.action-buttons button {
+  border: none;
+  padding: 10px 14px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-available { background: green; color: white; }
+.btn-preparing { background: orange; }
+.btn-dining { background: #ff5722; color: white; }
+.btn-reserved { background: #2196f3; color: white; }
+.btn-payment { background: red; color: white; }
+.btn-cleaning { background: #555; color: white; }
+
+@media(max-width: 600px) {
+  body {
+    padding: 15px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🍽️ KRUTZ Table Management</h1>
+  <p>Live restaurant floor view</p>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <h3>Available</h3>
+    <div class="number" id="availableCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Preparing</h3>
+    <div class="number" id="preparingCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Dining</h3>
+    <div class="number" id="diningCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Reserved</h3>
+    <div class="number" id="reservedCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Payment</h3>
+    <div class="number" id="paymentCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Cleaning</h3>
+    <div class="number" id="cleaningCount">0</div>
+  </div>
+</div>
+
+<div class="floor" id="floor"></div>
+
+<div class="modal" id="tableModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal()">Close</button>
+
+    <h2 id="modalTitle">Table</h2>
+
+    <p><b>Status:</b> <span id="modalStatus"></span></p>
+    <p><b>Customer:</b> <span id="modalCustomer"></span></p>
+    <p><b>Guests:</b> <span id="modalGuests"></span></p>
+    <p><b>Bill:</b> ₹<span id="modalBill"></span></p>
+    <p><b>Waiter:</b> <span id="modalWaiter"></span></p>
+    <p><b>Time Occupied:</b> <span id="modalTime"></span></p>
+
+    <div class="action-buttons">
+      <button class="btn-available" onclick="changeStatus('Available')">Available</button>
+      <button class="btn-preparing" onclick="changeStatus('Preparing')">Preparing</button>
+      <button class="btn-dining" onclick="changeStatus('Dining')">Dining</button>
+      <button class="btn-reserved" onclick="changeStatus('Reserved')">Reserved</button>
+      <button class="btn-payment" onclick="changeStatus('Waiting Payment')">Payment</button>
+      <button class="btn-cleaning" onclick="changeStatus('Cleaning')">Cleaning</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let tables = [];
+let selectedTable = null;
+
+for (let i = 1; i <= 20; i++) {
+  tables.push({
+    tableNumber: i,
+    status: "Available",
+    customerName: "-",
+    guests: 0,
+    billAmount: 0,
+    waiter: "-",
+    occupiedMinutes: 0,
+    currentOrderId: ""
+  });
+}
+
+function getClass(status) {
+  if (status === "Available") return "available";
+  if (status === "Preparing") return "preparing";
+  if (status === "Dining") return "dining";
+  if (status === "Reserved") return "reserved";
+  if (status === "Waiting Payment") return "payment";
+  if (status === "Cleaning") return "cleaning";
+  return "available";
+}
+
+function getIcon(status) {
+  if (status === "Available") return "🟢";
+  if (status === "Preparing") return "🟡";
+  if (status === "Dining") return "🟠";
+  if (status === "Reserved") return "🔵";
+  if (status === "Waiting Payment") return "🔴";
+  if (status === "Cleaning") return "⚫";
+  return "🟢";
+}
+
+function minutesSince(createdAt) {
+  if (!createdAt) return 0;
+
+  let date;
+
+  if (createdAt.toDate) {
+    date = createdAt.toDate();
+  } else {
+    date = new Date(createdAt);
+  }
+
+  const now = new Date();
+  return Math.floor((now - date) / 60000);
+}
+
+function applyOrderToTable(orderId, order) {
+  const tableNumber = Number(order.tableNumber);
+  if (!tableNumber || tableNumber < 1 || tableNumber > 20) return;
+
+  const table = tables.find(t => t.tableNumber === tableNumber);
+  if (!table) return;
+
+  const status = order.status || "Pending";
+  const paymentStatus = order.paymentStatus || "Unpaid";
+
+  table.customerName = order.customerName || "-";
+  table.guests = order.guests || 1;
+  table.billAmount = order.totalAmount || 0;
+  table.waiter = "Not assigned";
+  table.occupiedMinutes = minutesSince(order.createdAt);
+  table.currentOrderId = orderId;
+
+  if (order.orderType === "Pre-order" && status === "Pending") {
+    table.status = "Reserved";
+  } else if (status === "Pending" || status === "Preparing") {
+    table.status = "Preparing";
+  } else if (status === "Ready") {
+    table.status = "Dining";
+  } else if (status === "Delivered" && paymentStatus !== "Paid") {
+    table.status = "Waiting Payment";
+  } else if (paymentStatus === "Paid") {
+    table.status = "Cleaning";
+  }
+}
+
+function renderTables() {
+  const floor = document.getElementById("floor");
+
+  let html = "";
+
+  let available = 0;
+  let preparing = 0;
+  let dining = 0;
+  let reserved = 0;
+  let payment = 0;
+  let cleaning = 0;
+
+  tables.forEach(table => {
+    if (table.status === "Available") available++;
+    if (table.status === "Preparing") preparing++;
+    if (table.status === "Dining") dining++;
+    if (table.status === "Reserved") reserved++;
+    if (table.status === "Waiting Payment") payment++;
+    if (table.status === "Cleaning") cleaning++;
+
+    html += `
+      <div class="table-card ${getClass(table.status)}" onclick="openTable(${table.tableNumber})">
+        <h2>${getIcon(table.status)} T${table.tableNumber}</h2>
+        <div class="status">${table.status}</div>
+        <p>${table.customerName}</p>
+        <p>₹${table.billAmount}</p>
+      </div>
+    `;
+  });
+
+  floor.innerHTML = html;
+
+  document.getElementById("availableCount").innerText = available;
+  document.getElementById("preparingCount").innerText = preparing;
+  document.getElementById("diningCount").innerText = dining;
+  document.getElementById("reservedCount").innerText = reserved;
+  document.getElementById("paymentCount").innerText = payment;
+  document.getElementById("cleaningCount").innerText = cleaning;
+}
+
+function openTable(tableNumber) {
+  selectedTable = tables.find(t => t.tableNumber === tableNumber);
+
+  document.getElementById("modalTitle").innerText = "Table " + selectedTable.tableNumber;
+  document.getElementById("modalStatus").innerText = selectedTable.status;
+  document.getElementById("modalCustomer").innerText = selectedTable.customerName;
+  document.getElementById("modalGuests").innerText = selectedTable.guests;
+  document.getElementById("modalBill").innerText = selectedTable.billAmount;
+  document.getElementById("modalWaiter").innerText = selectedTable.waiter;
+  document.getElementById("modalTime").innerText = selectedTable.occupiedMinutes + " mins";
+
+  document.getElementById("tableModal").style.display = "flex";
+}
+
+function closeModal() {
+  document.getElementById("tableModal").style.display = "none";
+}
+
+async function changeStatus(status) {
+  if (!selectedTable) return;
+
+  selectedTable.status = status;
+
+  if (selectedTable.currentOrderId) {
+    const orderRef = doc(db, "orders", selectedTable.currentOrderId);
+
+    if (status === "Preparing") {
+      await updateDoc(orderRef, { status: "Preparing" });
+    }
+
+    if (status === "Dining") {
+      await updateDoc(orderRef, { status: "Ready" });
+    }
+
+    if (status === "Waiting Payment") {
+      await updateDoc(orderRef, { status: "Delivered" });
+    }
+
+    if (status === "Available") {
+      await updateDoc(orderRef, {
+        status: "Completed",
+        paymentStatus: "Paid"
+      });
+    }
+  }
+
+  closeModal();
+  renderTables();
+}
+
+const q = query(
+  collection(db, "orders"),
+  orderBy("createdAt", "desc")
+);
+
+onSnapshot(q, function(snapshot) {
+  tables = [];
+
+  for (let i = 1; i <= 20; i++) {
+    tables.push({
+      tableNumber: i,
+      status: "Available",
+      customerName: "-",
+      guests: 0,
+      billAmount: 0,
+      waiter: "-",
+      occupiedMinutes: 0,
+      currentOrderId: ""
+    });
+  }
+
+  snapshot.forEach(function(orderDoc) {
+    const order = orderDoc.data();
+
+    if (order.status === "Completed") return;
+
+    applyOrderToTable(orderDoc.id, order);
+  });
+
+  renderTables();
+});
+
+setInterval(renderTables, 60000);
+
+window.openTable = openTable;
+window.closeModal = closeModal;
+window.changeStatus = changeStatus;
+</script>
+
+</body>
+</html>

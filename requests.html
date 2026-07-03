@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Customer Requests</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.form-box, .request-list {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  margin-bottom: 25px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+}
+
+.quick-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 15px;
+}
+
+button {
+  border: none;
+  padding: 13px;
+  border-radius: 18px;
+  cursor: pointer;
+  font-weight: bold;
+  background: #111;
+  color: white;
+}
+
+button:hover {
+  background: #ff9800;
+  color: #111;
+}
+
+.request-card {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.done {
+  background: green;
+  color: white;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🔔 KRUTZ Customer Request Center</h1>
+  <p>Call waiter, water, bill request and table assistance</p>
+</div>
+
+<div class="form-box">
+  <h2>Send Customer Request</h2>
+
+  <input id="tableNumber" placeholder="Table Number">
+
+  <div class="quick-buttons">
+    <button onclick="sendRequest('Call Waiter')">🔔 Call Waiter</button>
+    <button onclick="sendRequest('Water')">💧 Water</button>
+    <button onclick="sendRequest('Extra Plate')">🍽 Extra Plate</button>
+    <button onclick="sendRequest('Spoon')">🥄 Spoon</button>
+    <button onclick="sendRequest('Tissue')">🧻 Tissue</button>
+    <button onclick="sendRequest('Request Bill')">💳 Request Bill</button>
+    <button onclick="sendRequest('Complaint')">❗ Complaint</button>
+  </div>
+</div>
+
+<div class="request-list">
+  <h2>Live Requests</h2>
+  <div id="requestList">Loading...</div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  updateDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const requestList = document.getElementById("requestList");
+
+window.sendRequest = async function(type) {
+  const table = document.getElementById("tableNumber").value.trim();
+
+  if (!table) {
+    alert("Please enter table number.");
+    return;
+  }
+
+  await addDoc(collection(db, "requests"), {
+    tableNumber: table,
+    requestType: type,
+    status: "Pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert(type + " request sent for Table " + table);
+};
+
+onSnapshot(collection(db, "requests"), function(snapshot) {
+  let html = "";
+
+  snapshot.forEach(function(requestDoc) {
+    const id = requestDoc.id;
+    const req = requestDoc.data();
+
+    if (req.status === "Completed") return;
+
+    html += `
+      <div class="request-card">
+        <h3>Table ${req.tableNumber}</h3>
+        <p><b>Request:</b> ${req.requestType}</p>
+        <p><b>Status:</b> ${req.status}</p>
+
+        <button class="done" onclick="completeRequest('${id}')">Mark Done</button>
+      </div>
+    `;
+  });
+
+  requestList.innerHTML = html || "<div class='empty'>No active requests</div>";
+});
+
+window.completeRequest = async function(id) {
+  await updateDoc(doc(db, "requests", id), {
+    status: "Completed"
+  });
+};
+</script>
+
+</body>
+</html>

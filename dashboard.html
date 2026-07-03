@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>KRUTZ Manager Dashboard</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  padding: 25px;
+  margin: 0;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.top-box, .tabs {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.nav-btn {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  margin: 6px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.nav-btn:hover {
+  background: #ff9800;
+  color: #111;
+}
+
+.sound-btn {
+  background: #ff9800;
+  color: white;
+  padding: 12px 25px;
+  font-size: 16px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  max-width: 1100px;
+  margin: 20px auto;
+}
+
+.summary-card {
+  background: white;
+  padding: 18px;
+  border-radius: 18px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 5px 15px rgba(0,0,0,.12);
+}
+
+.summary-card span {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+  color: #ff9800;
+}
+
+.tab-btn {
+  background: white;
+  color: #111;
+  padding: 12px 18px;
+  border-radius: 25px;
+  margin: 6px;
+  border: 2px solid #111;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.tab-btn.active {
+  background: #111;
+  color: white;
+}
+
+.section {
+  max-width: 1100px;
+  margin: 25px auto;
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 18px;
+}
+
+.section h2 {
+  margin-left: 10px;
+}
+
+.order {
+  background: white;
+  padding: 18px;
+  margin: 15px;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.15);
+}
+
+.status {
+  font-weight: bold;
+  color: green;
+}
+
+button {
+  margin: 6px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.preparing { background: orange; }
+.ready { background: lightgreen; }
+.delivered { background: #111; color: white; }
+
+.empty {
+  padding: 15px;
+  color: #555;
+}
+
+@media(max-width: 700px) {
+  body {
+    padding: 15px;
+  }
+
+  .nav-btn {
+    width: 100%;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>📊 KRUTZ Manager Dashboard</h1>
+<p class="subtitle">Live restaurant control center</p>
+
+<div class="top-box">
+  <button class="nav-btn" onclick="location.href='kitchen.html'">👨‍🍳 Kitchen</button>
+  <button class="nav-btn" onclick="location.href='waiter.html'">🧑‍🍳 Waiter</button>
+  <button class="nav-btn" onclick="location.href='cashier.html'">💳 Cashier</button>
+  <button class="nav-btn" onclick="location.href='inventory.html'">📦 Inventory</button>
+  <button class="nav-btn" onclick="location.href='reservations.html'">📅 Reservations</button>
+  <button class="nav-btn" onclick="location.href='staff-management.html'">👥 Staff</button>
+  <button class="nav-btn" onclick="location.href='owner.html'">👑 Owner</button>
+  <button class="nav-btn" onclick="location.href='os.html'">🏠 OS Hub</button>
+</div>
+
+<div class="top-box">
+  <button class="sound-btn" onclick="enableSound()">🔔 Start Alarm</button>
+</div>
+<div class="summary">
+
+<div class="summary-card">
+💰 Today's Sales
+<span id="todaySales">₹0</span>
+</div>
+
+<div class="summary-card">
+📦 Orders
+<span id="allCount">0</span>
+</div>
+
+<div class="summary-card">
+🔴 Pending
+<span id="pendingCount">0</span>
+</div>
+
+<div class="summary-card">
+🟠 Preparing
+<span id="preparingCount">0</span>
+</div>
+
+<div class="summary-card">
+🟢 Ready
+<span id="readyCount">0</span>
+</div>
+
+<div class="summary-card">
+✅ Delivered
+<span id="deliveredCount">0</span>
+</div>
+
+<div class="summary-card">
+🪑 Tables
+<span id="tableCount">0</span>
+</div>
+
+<div class="summary-card">
+🔔 Waiter Calls
+<span id="requestCount">0</span>
+</div>
+
+<div class="summary-card">
+📅 Reservations
+<span id="reservationCount">0</span>
+</div>
+
+</div>
+
+<div class="tabs">
+
+<button class="tab-btn active"
+onclick="filterOrders('All',this)">
+All Orders
+</button>
+
+<button class="tab-btn"
+onclick="filterOrders('Pending',this)">
+Pending
+</button>
+
+<button class="tab-btn"
+onclick="filterOrders('Preparing',this)">
+Preparing
+</button>
+
+<button class="tab-btn"
+onclick="filterOrders('Ready',this)">
+Ready
+</button>
+
+<button class="tab-btn"
+onclick="filterOrders('Delivered',this)">
+Delivered
+</button>
+
+</div>
+
+<div class="section">
+
+<h2 id="sectionTitle">
+📦 All Orders
+</h2>
+
+<div id="ordersContainer"
+class="empty">
+
+Loading...
+
+</div>
+
+</div>
+
+<audio
+id="alarmSound"
+src="alarm.mp3"
+preload="auto">
+</audio>
+
+<script type="module">
+
+import { db } from "./firebase.js";
+
+import {
+
+collection,
+onSnapshot,
+query,
+orderBy,
+doc,
+updateDoc
+
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+const alarmSound = document.getElementById("alarmSound");
+const ordersContainer = document.getElementById("ordersContainer");
+const sectionTitle = document.getElementById("sectionTitle");
+
+let soundEnabled = false;
+let firstLoad = true;
+let knownOrderIds = new Set();
+let allOrders = [];
+let currentFilter = "All";
+let activeRequests = 0;
+
+window.enableSound = function() {
+  soundEnabled = true;
+  alarmSound.currentTime = 0;
+  alarmSound.play();
+  alert("Alarm enabled. New orders will play alarm sound.");
+};
+
+function playAlarm() {
+  if (!soundEnabled) return;
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch(() => {});
+}
+
+function createOrderCard(orderObj) {
+  const id = orderObj.id;
+  const order = orderObj.data;
+  const items = order.items || {};
+
+  return `
+    <div class="order">
+      <h3>🛎️ Order</h3>
+
+      <p><b>Order ID:</b> ${id}</p>
+      <p><b>Customer:</b> ${order.customerName || "No name"}</p>
+      <p><b>Phone:</b> ${order.phoneNumber || "No phone"}</p>
+      <p><b>Table:</b> ${order.tableNumber || "No table"}</p>
+
+      <hr>
+
+      <p><b>Burger:</b> ${items.burger || 0}</p>
+      <p><b>Pizza:</b> ${items.pizza || 0}</p>
+      <p><b>Coffee:</b> ${items.coffee || 0}</p>
+
+      <p><b>Total:</b> ₹${order.totalAmount || 0}</p>
+      <p><b>Status:</b> <span class="status">${order.status || "Pending"}</span></p>
+      <p><b>Payment:</b> ${order.paymentStatus || "Unpaid"}</p>
+
+      <button class="preparing" onclick="updateStatus('${id}', 'Preparing')">Preparing</button>
+      <button class="ready" onclick="updateStatus('${id}', 'Ready')">Ready</button>
+      <button class="delivered" onclick="updateStatus('${id}', 'Delivered')">Delivered</button>
+    </div>
+  `;
+}
+
+function renderOrders() {
+  let filteredOrders = allOrders;
+
+  if (currentFilter !== "All") {
+    filteredOrders = allOrders.filter(orderObj => {
+      const status = orderObj.data.status || "Pending";
+      return status === currentFilter;
+    });
+  }
+
+  if (filteredOrders.length === 0) {
+    ordersContainer.innerHTML = `<div class="empty">No ${currentFilter} orders.</div>`;
+    return;
+  }
+
+  ordersContainer.innerHTML = filteredOrders.map(createOrderCard).join("");
+}
+
+window.filterOrders = function(filter, button) {
+  currentFilter = filter;
+
+  document.querySelectorAll(".tab-btn").forEach(btn => {
+    btn.classList.remove("active");
+  });
+
+  button.classList.add("active");
+
+  if (filter === "All") sectionTitle.innerText = "📦 All Orders";
+  if (filter === "Pending") sectionTitle.innerText = "🔴 Pending Orders";
+  if (filter === "Preparing") sectionTitle.innerText = "🟠 Preparing Orders";
+  if (filter === "Ready") sectionTitle.innerText = "🟢 Ready Orders";
+  if (filter === "Delivered") sectionTitle.innerText = "✅ Delivered Orders";
+
+  renderOrders();
+};
+
+const ordersQuery = query(
+  collection(db, "orders"),
+  orderBy("createdAt", "desc")
+);
+
+onSnapshot(ordersQuery, function(snapshot) {
+  allOrders = [];
+
+  snapshot.forEach(function(orderDoc) {
+    const order = orderDoc.data();
+    const id = orderDoc.id;
+
+    if (!firstLoad && !knownOrderIds.has(id)) {
+      playAlarm();
+    }
+
+    knownOrderIds.add(id);
+
+    allOrders.push({
+      id: id,
+      data: order
+    });
+  });
+
+  const pendingCount =
+    allOrders.filter(o => (o.data.status || "Pending") === "Pending").length;
+
+  const preparingCount =
+    allOrders.filter(o => (o.data.status || "Pending") === "Preparing").length;
+
+  const readyCount =
+    allOrders.filter(o => (o.data.status || "Pending") === "Ready").length;
+
+  const deliveredCount =
+    allOrders.filter(o => (o.data.status || "Pending") === "Delivered").length;
+
+  const todaySales =
+    allOrders
+      .filter(o => (o.data.paymentStatus || "Unpaid") === "Paid")
+      .reduce((sum, o) => sum + Number(o.data.totalAmount || 0), 0);
+
+  const activeTables = new Set();
+
+  allOrders.forEach(o => {
+    const status = o.data.status || "Pending";
+    const table = o.data.tableNumber;
+
+    if (
+      table &&
+      status !== "Completed" &&
+      status !== "Cancelled"
+    ) {
+      activeTables.add(table);
+    }
+  });
+
+  const reservations =
+    allOrders.filter(o => o.data.orderType === "Pre-order").length;
+
+  document.getElementById("allCount").innerText = allOrders.length;
+  document.getElementById("pendingCount").innerText = pendingCount;
+  document.getElementById("preparingCount").innerText = preparingCount;
+  document.getElementById("readyCount").innerText = readyCount;
+  document.getElementById("deliveredCount").innerText = deliveredCount;
+  document.getElementById("todaySales").innerText = "₹" + todaySales;
+  document.getElementById("tableCount").innerText = activeTables.size + " / 20";
+  document.getElementById("reservationCount").innerText = reservations;
+
+  document.getElementById("requestCount").innerText = activeRequests;
+
+  renderOrders();
+
+  firstLoad = false;
+});
+
+onSnapshot(collection(db, "requests"), function(snapshot) {
+  let count = 0;
+
+  snapshot.forEach(function(requestDoc) {
+    const request = requestDoc.data();
+
+    if (request.status !== "Completed") {
+      count++;
+    }
+  });
+
+  activeRequests = count;
+  document.getElementById("requestCount").innerText = activeRequests;
+});
+
+window.updateStatus = async function(id, status) {
+  const orderRef = doc(db, "orders", id);
+
+  await updateDoc(orderRef, {
+    status: status
+  });
+};
+
+</script>
+
+</body>
+</html>

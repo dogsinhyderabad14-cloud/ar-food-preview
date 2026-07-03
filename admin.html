@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Admin Hub</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 30px;
+  border-radius: 22px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.03);
+}
+
+.card h2 {
+  margin-top: 0;
+}
+
+.card p {
+  color: #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>KRUTZ Restaurant OS</h1>
+  <p>Unified Staff Admin Hub</p>
+</div>
+
+<div class="grid">
+
+  <div class="card" onclick="openPage('owner.html')">
+    <h2>👑 Owner Dashboard</h2>
+    <p>Revenue, orders, analytics and AI insights.</p>
+  </div>
+
+  <div class="card" onclick="openPage('kitchen.html')">
+    <h2>👨‍🍳 Kitchen Display</h2>
+    <p>Live orders, preparation status and kitchen alerts.</p>
+  </div>
+
+  <div class="card" onclick="openPage('tables.html')">
+    <h2>🪑 Table Management</h2>
+    <p>Live restaurant floor and table status.</p>
+  </div>
+
+  <div class="card" onclick="openPage('waiter.html')">
+    <h2>🧑‍🍳 Waiter Dashboard</h2>
+    <p>Serve food, payment requests and cleaning tasks.</p>
+  </div>
+
+  <div class="card" onclick="openPage('cashier.html')">
+    <h2>🧾 Cashier Pro</h2>
+    <p>Billing, GST, payment and receipt printing.</p>
+  </div>
+
+  <div class="card" onclick="openPage('inventory.html')">
+    <h2>📦 Inventory</h2>
+    <p>Ingredient stock, low stock and critical alerts.</p>
+  </div>
+
+  <div class="card" onclick="openPage('reservations.html')">
+    <h2>📅 Reservations</h2>
+    <p>Pre-orders, arrivals and table reservations.</p>
+  </div>
+
+  <div class="card" onclick="openPage('menu.html')">
+    <h2>🍔 Menu Management</h2>
+    <p>Add, update and manage menu items and 3D models.</p>
+  </div>
+
+  <div class="card" onclick="openPage('staff-management.html')">
+    <h2>👥 Staff Management</h2>
+    <p>Employees, roles, shifts and salary details.</p>
+  </div>
+
+  <div class="card" onclick="openPage('index.html')">
+    <h2>📱 Customer AR Menu</h2>
+    <p>Open the customer-facing QR/AR ordering page.</p>
+  </div>
+
+</div>
+
+<script>
+function openPage(page) {
+  window.location.href = page;
+}
+</script>
+
+</body>
+</html>

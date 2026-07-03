@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Waiter Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.column {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 70vh;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.column h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.order-card {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+@keyframes flashRequest {
+  0% { background: #fff7ec; }
+  50% { background: #ff0000; color: white; }
+  100% { background: #fff7ec; }
+}
+
+.request-alert {
+  animation: flashRequest 0.6s linear infinite;
+}
+
+.table {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.serve { background: orange; }
+.payment { background: red; color: white; }
+.clean { background: #111; color: white; }
+
+.empty {
+  text-align: center;
+  color: #777;
+  margin-top: 20px;
+}
+
+@media(max-width: 900px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🧑‍🍳 KRUTZ Waiter Dashboard</h1>
+  <p>Serve food, manage payment requests, and table cleaning</p>
+</div>
+
+<div class="board">
+  <div class="column">
+    <h2>🟢 Ready To Serve</h2>
+    <div id="readyToServe">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>💳 Waiting Payment</h2>
+    <div id="waitingPayment">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>🧹 Cleaning Required</h2>
+    <div id="cleaningRequired">Loading...</div>
+  </div>
+  <div class="column">
+  <h2>🔔 Customer Requests</h2>
+  <div id="customerRequests">Loading...</div>
+</div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+collection,
+onSnapshot,
+query,
+orderBy,
+doc,
+updateDoc,
+addDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const readyToServe = document.getElementById("readyToServe");
+const waitingPayment = document.getElementById("waitingPayment");
+const cleaningRequired = document.getElementById("cleaningRequired");
+const customerRequests = document.getElementById("customerRequests");
+const notifySound = document.getElementById("notifySound");
+
+let previousRequestCount = 0;
+
+function orderCard(id, order, type) {
+  const items = order.items || {};
+
+  let buttonHTML = "";
+
+  if (type === "ready") {
+    buttonHTML = `<button class="serve" onclick="serveOrder('${id}')">Serve Food</button>`;
+  }
+
+  if (type === "payment") {
+    buttonHTML = `<button class="payment" onclick="requestPayment('${id}')">Confirm Payment Pending</button>`;
+  }
+
+  if (type === "cleaning") {
+    buttonHTML = `<button class="clean" onclick="markClean('${id}')">Mark Table Available</button>`;
+  }
+
+  return `
+    <div class="order-card request-alert">
+      <div class="table">Table ${order.tableNumber || "No table"}</div>
+
+      <p><b>Customer:</b> ${order.customerName || "-"}</p>
+
+      <p>
+        🍔 Burger × ${items.burger || 0}<br>
+        🍕 Pizza × ${items.pizza || 0}<br>
+        ☕ Coffee × ${items.coffee || 0}
+      </p>
+
+      <p><b>Total:</b> ₹${order.totalAmount || 0}</p>
+      <p><b>Status:</b> ${order.status || "Pending"}</p>
+      <p><b>Payment:</b> ${order.paymentStatus || "Unpaid"}</p>
+
+      ${buttonHTML}
+    </div>
+  `;
+}
+
+const q = query(
+  collection(db, "orders"),
+  orderBy("createdAt", "desc")
+);
+
+onSnapshot(q, function(snapshot) {
+  let readyHTML = "";
+  let paymentHTML = "";
+  let cleaningHTML = "";
+
+  snapshot.forEach(function(orderDoc) {
+    const id = orderDoc.id;
+    const order = orderDoc.data();
+
+    const status = order.status || "Pending";
+    const paymentStatus = order.paymentStatus || "Unpaid";
+
+    if (status === "Ready") {
+      readyHTML += orderCard(id, order, "ready");
+    }
+
+    if (status === "Delivered" && paymentStatus !== "Paid") {
+      paymentHTML += orderCard(id, order, "payment");
+    }
+
+    if (paymentStatus === "Paid" && status !== "Completed") {
+      cleaningHTML += orderCard(id, order, "cleaning");
+    }
+  });
+
+  readyToServe.innerHTML = readyHTML || "<div class='empty'>No ready orders</div>";
+  waitingPayment.innerHTML = paymentHTML || "<div class='empty'>No payment requests</div>";
+  cleaningRequired.innerHTML = cleaningHTML || "<div class='empty'>No cleaning required</div>";
+});
+
+window.serveOrder = async function(id) {
+  const orderRef = doc(db, "orders", id);
+
+  await updateDoc(orderRef, {
+    status: "Delivered"
+  });
+};
+
+window.requestPayment = async function(id) {
+  const orderRef = doc(db, "orders", id);
+
+  await updateDoc(orderRef, {
+    status: "Delivered"
+  });
+
+  alert("Payment request confirmed.");
+};
+
+window.markClean = async function(id) {
+  const orderRef = doc(db, "orders", id);
+
+  await updateDoc(orderRef, {
+    status: "Completed"
+  });
+};
+function requestCard(id, req) {
+  return `
+    <div class="order-card">
+      <div class="table">Table ${req.tableNumber || "No table"}</div>
+      <p><b>Request:</b> ${req.requestType || req.request || "-"}</p>
+      <p><b>Status:</b> ${req.status || "Pending"}</p>
+      <button class="serve" onclick="completeRequest('${id}')">Completed</button>
+    </div>
+  `;
+}
+
+onSnapshot(collection(db, "requests"), function(snapshot) {
+
+    let requestHTML = "";
+    let currentCount = 0;
+
+    snapshot.forEach(function(requestDoc) {
+
+        const id = requestDoc.id;
+        const req = requestDoc.data();
+
+        if (req.status !== "Completed") {
+
+            currentCount++;
+
+            if (currentCount > previousRequestCount) {
+    requestHTML += requestCard(id, req).replace(
+        'class="order-card"',
+        'class="order-card request-alert"'
+    );
+} else {
+    requestHTML += requestCard(id, req);
+}
+
+        }
+
+    });
+
+    customerRequests.innerHTML =
+        requestHTML || "<div class='empty'>No customer requests</div>";
+
+    if (currentCount > previousRequestCount) {
+
+        // 🔔 Play notification sound
+        notifySound.currentTime = 0;
+        notifySound.play().catch(function(err) {
+            console.log("Sound blocked:", err);
+        });
+
+        // 📳 Vibrate phone (supported browsers)
+        if ("vibrate" in navigator) {
+            navigator.vibrate([300, 200, 300]);
+        }
+    }
+
+    previousRequestCount = currentCount;
+
+});
+
+window.completeRequest = async function(id) {
+  await updateDoc(doc(db, "requests", id), {
+    status: "Completed"
+  });
+};
+</script>
+
+<audio id="notifySound" preload="auto">
+  <source src="notification.wav" type="audio/wav">
+</audio>
+
+</body>
+</html>

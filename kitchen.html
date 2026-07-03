@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Kitchen Display System</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: white;
+  padding: 20px;
+  margin: 0;
+}
+
+h1 {
+  text-align: center;
+  color: #ff9800;
+}
+
+.top-box {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.alarm-btn {
+  background: #ff9800;
+  color: #111;
+  padding: 12px 25px;
+  border: none;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.scheduler {
+  background: #222;
+  padding: 20px;
+  border-radius: 18px;
+  margin-bottom: 25px;
+}
+
+.scheduler h2 {
+  color: #ff9800;
+  text-align: center;
+  margin-top: 0;
+}
+
+.scheduled-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+}
+
+.column {
+  background: #222;
+  border-radius: 15px;
+  padding: 15px;
+  min-height: 70vh;
+}
+
+.column h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.order {
+  background: white;
+  color: #111;
+  border-radius: 15px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.3);
+}
+
+.table {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.items {
+  font-size: 18px;
+  margin: 12px 0;
+}
+
+.bill {
+  background: #fff2df;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  margin: 12px 0;
+}
+
+.time-box {
+  background: #111;
+  color: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin: 10px 0;
+  font-size: 15px;
+}
+
+.preorder {
+  border: 3px solid #ff9800;
+}
+
+.due-now {
+  border: 3px solid red;
+  background: #fff0f0;
+}
+
+@keyframes blink {
+  0% {
+    border: 4px solid red;
+    box-shadow: 0 0 12px red;
+  }
+
+  50% {
+    border: 4px solid yellow;
+    box-shadow: 0 0 28px orange;
+  }
+
+  100% {
+    border: 4px solid red;
+    box-shadow: 0 0 12px red;
+  }
+}
+
+.new-order {
+  animation: blink 1s infinite;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 4px;
+}
+
+.accept {
+  background: orange;
+}
+
+.ready {
+  background: lightgreen;
+}
+
+.delivered {
+  background: #111;
+  color: white;
+}
+
+.empty {
+  color: #aaa;
+  text-align: center;
+  margin-top: 20px;
+}
+
+@media(max-width: 900px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>👨‍🍳 KRUTZ Kitchen Display System</h1>
+
+<div class="top-box">
+  <button class="alarm-btn" onclick="enableAlarm()">🔔 Start Alarm</button>
+</div>
+
+<audio id="alarmSound" src="alarm.mp3" preload="auto"></audio>
+
+<div class="scheduler">
+  <h2>⏰ AI Kitchen Scheduler - Upcoming Pre-orders</h2>
+  <div class="scheduled-grid" id="scheduledOrders">
+    <div class="empty">Loading scheduled orders...</div>
+  </div>
+</div>
+
+<div class="board">
+  <div class="column">
+    <h2>🔴 Pending <span id="pendingCount">0</span></h2>
+    <div id="pendingOrders"></div>
+  </div>
+
+  <div class="column">
+    <h2>🟠 Preparing <span id="preparingCount">0</span></h2>
+    <div id="preparingOrders"></div>
+  </div>
+
+  <div class="column">
+    <h2>🟢 Ready <span id="readyCount">0</span></h2>
+    <div id="readyOrders"></div>
+  </div>
+
+  <div class="column">
+    <h2>✅ Delivered <span id="deliveredCount">0</span></h2>
+    <div id="deliveredOrders"></div>
+  </div>
+</div>
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const pendingOrders = document.getElementById("pendingOrders");
+const preparingOrders = document.getElementById("preparingOrders");
+const readyOrders = document.getElementById("readyOrders");
+const deliveredOrders = document.getElementById("deliveredOrders");
+const scheduledOrders = document.getElementById("scheduledOrders");
+
+const alarmSound = document.getElementById("alarmSound");
+
+let alarmEnabled = false;
+
+let firstLoad = true;
+
+let knownOrders = new Set();
+
+let waitingOrders = new Set();
+
+let latestOrders = [];
+
+window.enableAlarm = function(){
+
+    alarmEnabled = true;
+
+    alarmSound.loop = false;
+    alarmSound.currentTime = 0;
+    alarmSound.play();
+
+    setTimeout(function(){
+        alarmSound.pause();
+        alarmSound.currentTime = 0;
+    }, 700);
+
+    alert("Kitchen Alarm Enabled");
+
+}
+
+function playAlarm(){
+
+    if(!alarmEnabled) return;
+
+    alarmSound.loop = true;
+
+    alarmSound.currentTime = 0;
+
+    alarmSound.play();
+
+}
+
+function stopAlarm(){
+
+    alarmSound.pause();
+
+    alarmSound.currentTime = 0;
+
+    alarmSound.loop = false;
+
+}
+
+function getKitchenStart(order){
+
+    if(order.arrivalDate && order.arrivalTime){
+
+        const arrival = new Date(order.arrivalDate+"T"+order.arrivalTime);
+
+        let prep = 0;
+
+        const items = order.items || {};
+
+        if(items.burger>0) prep = Math.max(prep,15);
+
+        if(items.pizza>0) prep = Math.max(prep,20);
+
+        if(items.coffee>0) prep = Math.max(prep,5);
+
+        arrival.setMinutes(arrival.getMinutes()-(prep+10));
+
+        return arrival;
+
+    }
+
+    return null;
+
+}
+
+function countdown(target){
+
+    if(!target) return "-";
+
+    const now = new Date();
+
+    const diff = target-now;
+
+    if(diff<=0){
+
+        return "START NOW";
+
+    }
+
+    const mins = Math.floor(diff/60000);
+
+    const hrs = Math.floor(mins/60);
+
+    const rem = mins%60;
+
+    if(hrs>0){
+
+        return hrs+"h "+rem+"m";
+
+    }
+
+    return rem+"m";
+
+}
+
+function orderCard(id,order,extra=""){
+
+    const items = order.items || {};
+
+    const kitchenStart = getKitchenStart(order);
+
+    return `
+
+<div class="order ${extra} ${(order.status || "Pending") === "Pending" ? "new-order" : ""}">
+
+<div class="table">
+
+Table ${order.tableNumber}
+
+</div>
+
+<div class="items">
+
+🍔 Burger × ${items.burger||0}<br>
+
+🍕 Pizza × ${items.pizza||0}<br>
+
+☕ Coffee × ${items.coffee||0}
+
+</div>
+
+<div class="bill">
+
+₹${order.totalAmount||0}
+
+</div>
+
+${order.orderType==="Pre-order" ? `
+
+<div class="time-box">
+
+Arrival
+
+${order.arrivalDate}
+
+${order.arrivalTime}
+
+<br>
+
+Kitchen Start
+
+${kitchenStart ? kitchenStart.toLocaleString():"-"}
+
+<br>
+
+Countdown
+
+${countdown(kitchenStart)}
+
+</div>
+
+`:""}
+
+<p>
+
+<b>Status</b>
+
+${order.status}
+
+</p>
+
+<button class="accept"
+
+onclick="updateStatus('${id}','Preparing')">
+
+Accept / Preparing
+
+</button>
+
+<button class="ready"
+
+onclick="updateStatus('${id}','Ready')">
+
+Ready
+
+</button>
+
+<button class="delivered"
+
+onclick="updateStatus('${id}','Delivered')">
+
+Delivered
+
+</button>
+
+</div>
+
+`;
+
+}
+function renderOrders(){
+
+    let pendingHTML = "";
+    let preparingHTML = "";
+    let readyHTML = "";
+    let deliveredHTML = "";
+    let scheduledHTML = "";
+
+    let pendingCount = 0;
+    let preparingCount = 0;
+    let readyCount = 0;
+    let deliveredCount = 0;
+
+    const now = new Date();
+
+    latestOrders.forEach(function(data){
+
+        const id = data.id;
+        const order = data.order;
+        const status = order.status || "Pending";
+        const isPreorder = order.orderType === "Pre-order";
+        const kitchenStart = getKitchenStart(order);
+
+        if(!firstLoad && !knownOrders.has(id) && status === "Pending"){
+
+            waitingOrders.add(id);
+
+            playAlarm();
+
+        }
+
+        knownOrders.add(id);
+
+        if(isPreorder && status === "Pending" && kitchenStart){
+
+            if(kitchenStart > now){
+
+                scheduledHTML += orderCard(id,order,"preorder");
+
+                return;
+
+            }
+
+            waitingOrders.add(id);
+
+            playAlarm();
+
+            pendingHTML += orderCard(id,order,"due-now");
+
+            pendingCount++;
+
+            return;
+
+        }
+
+        if(status === "Preparing"){
+
+            preparingHTML += orderCard(id,order);
+
+            preparingCount++;
+
+        }
+
+        else if(status === "Ready"){
+
+            readyHTML += orderCard(id,order);
+
+            readyCount++;
+
+        }
+
+        else if(status === "Delivered"){
+
+            deliveredHTML += orderCard(id,order);
+
+            deliveredCount++;
+
+        }
+
+        else{
+
+            pendingHTML += orderCard(id,order);
+
+            pendingCount++;
+
+        }
+
+    });
+
+    scheduledOrders.innerHTML =
+        scheduledHTML || "<div class='empty'>No upcoming pre-orders</div>";
+
+    pendingOrders.innerHTML =
+        pendingHTML || "<div class='empty'>No pending orders</div>";
+
+    preparingOrders.innerHTML =
+        preparingHTML || "<div class='empty'>No preparing orders</div>";
+
+    readyOrders.innerHTML =
+        readyHTML || "<div class='empty'>No ready orders</div>";
+
+    deliveredOrders.innerHTML =
+        deliveredHTML || "<div class='empty'>No delivered orders</div>";
+
+    document.getElementById("pendingCount").innerText = pendingCount;
+
+    document.getElementById("preparingCount").innerText = preparingCount;
+
+    document.getElementById("readyCount").innerText = readyCount;
+
+    document.getElementById("deliveredCount").innerText = deliveredCount;
+
+    firstLoad = false;
+
+}
+
+const q = query(
+    collection(db,"orders"),
+    orderBy("createdAt","desc")
+);
+
+onSnapshot(q,function(snapshot){
+
+    latestOrders = [];
+
+    snapshot.forEach(function(orderDoc){
+
+        latestOrders.push({
+            id: orderDoc.id,
+            order: orderDoc.data()
+        });
+
+    });
+
+    renderOrders();
+
+});
+
+setInterval(function(){
+
+    renderOrders();
+
+},30000);
+
+window.updateStatus = async function(id,status){
+
+    const orderRef = doc(db,"orders",id);
+
+    await updateDoc(orderRef,{
+        status: status
+    });
+
+    if(status === "Preparing"){
+
+        waitingOrders.delete(id);
+
+        if(waitingOrders.size === 0){
+
+            stopAlarm();
+
+        }
+
+    }
+
+};
+
+</script>
+
+</body>
+</html>

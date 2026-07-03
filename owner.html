@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Owner Dashboard</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #555;
+}
+
+.number {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.section {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.alert {
+  background: #fff2df;
+  padding: 12px;
+  border-radius: 12px;
+  margin: 8px 0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>👑 KRUTZ Owner Dashboard</h1>
+  <p>Live business overview and restaurant intelligence</p>
+</div>
+
+<div class="cards">
+  <div class="card"><h3>Total Revenue</h3><div class="number">₹<span id="totalRevenue">0</span></div></div>
+  <div class="card"><h3>Total Orders</h3><div class="number" id="totalOrders">0</div></div>
+  <div class="card"><h3>Paid Orders</h3><div class="number" id="paidOrders">0</div></div>
+  <div class="card"><h3>Unpaid Orders</h3><div class="number" id="unpaidOrders">0</div></div>
+  <div class="card"><h3>Reservations</h3><div class="number" id="reservationCount">0</div></div>
+  <div class="card"><h3>Average Order</h3><div class="number">₹<span id="avgOrder">0</span></div></div>
+</div>
+
+<div class="cards">
+  <div class="card"><h3>Cash Revenue</h3><div class="number">₹<span id="cashRevenue">0</span></div></div>
+  <div class="card"><h3>UPI Revenue</h3><div class="number">₹<span id="upiRevenue">0</span></div></div>
+  <div class="card"><h3>Card Revenue</h3><div class="number">₹<span id="cardRevenue">0</span></div></div>
+</div>
+
+<div class="section">
+  <h2>🍔 Best Sellers</h2>
+  <p>Burger Sold: <b id="burgerSold">0</b></p>
+  <p>Pizza Sold: <b id="pizzaSold">0</b></p>
+  <p>Coffee Sold: <b id="coffeeSold">0</b></p>
+</div>
+
+<div class="section">
+  <h2>👨‍🍳 Kitchen Status</h2>
+  <p>Pending: <b id="pendingOrders">0</b></p>
+  <p>Preparing: <b id="preparingOrders">0</b></p>
+  <p>Ready: <b id="readyOrders">0</b></p>
+  <p>Delivered: <b id="deliveredOrders">0</b></p>
+</div>
+
+<div class="section">
+  <h2>🤖 AI Restaurant Copilot</h2>
+  <div class="alert" id="aiInsight1">Analyzing restaurant data...</div>
+  <div class="alert" id="aiInsight2">Checking best sellers...</div>
+  <div class="alert" id="aiInsight3">Checking payment method...</div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+onSnapshot(collection(db, "orders"), function(snapshot) {
+  let totalRevenue = 0;
+  let totalOrders = 0;
+  let paidOrders = 0;
+  let unpaidOrders = 0;
+  let reservationCount = 0;
+
+  let cashRevenue = 0;
+  let upiRevenue = 0;
+  let cardRevenue = 0;
+
+  let burgerSold = 0;
+  let pizzaSold = 0;
+  let coffeeSold = 0;
+
+  let pending = 0;
+  let preparing = 0;
+  let ready = 0;
+  let delivered = 0;
+
+  snapshot.forEach(function(orderDoc) {
+    const order = orderDoc.data();
+    const items = order.items || {};
+    const amount = Number(order.totalAmount || 0);
+    const status = order.status || "Pending";
+    const paymentStatus = order.paymentStatus || "Unpaid";
+
+    totalOrders++;
+
+    if (order.orderType === "Pre-order") reservationCount++;
+
+    if (paymentStatus === "Paid") {
+      paidOrders++;
+      totalRevenue += amount;
+
+      burgerSold += Number(items.burger || 0);
+      pizzaSold += Number(items.pizza || 0);
+      coffeeSold += Number(items.coffee || 0);
+
+      if (order.paymentMethod === "Cash") cashRevenue += amount;
+      if (order.paymentMethod === "UPI") upiRevenue += amount;
+      if (order.paymentMethod === "Card") cardRevenue += amount;
+    } else {
+      unpaidOrders++;
+    }
+
+    if (status === "Pending") pending++;
+    else if (status === "Preparing") preparing++;
+    else if (status === "Ready") ready++;
+    else if (status === "Delivered") delivered++;
+  });
+
+  const avgOrder = paidOrders > 0 ? Math.round(totalRevenue / paidOrders) : 0;
+
+  document.getElementById("totalRevenue").innerText = totalRevenue;
+  document.getElementById("totalOrders").innerText = totalOrders;
+  document.getElementById("paidOrders").innerText = paidOrders;
+  document.getElementById("unpaidOrders").innerText = unpaidOrders;
+  document.getElementById("reservationCount").innerText = reservationCount;
+  document.getElementById("avgOrder").innerText = avgOrder;
+
+  document.getElementById("cashRevenue").innerText = cashRevenue;
+  document.getElementById("upiRevenue").innerText = upiRevenue;
+  document.getElementById("cardRevenue").innerText = cardRevenue;
+
+  document.getElementById("burgerSold").innerText = burgerSold;
+  document.getElementById("pizzaSold").innerText = pizzaSold;
+  document.getElementById("coffeeSold").innerText = coffeeSold;
+
+  document.getElementById("pendingOrders").innerText = pending;
+  document.getElementById("preparingOrders").innerText = preparing;
+  document.getElementById("readyOrders").innerText = ready;
+  document.getElementById("deliveredOrders").innerText = delivered;
+
+  document.getElementById("aiInsight1").innerText =
+    "Today's paid revenue is ₹" + totalRevenue + ".";
+
+  document.getElementById("aiInsight2").innerText =
+    "Best seller: " +
+    (burgerSold >= pizzaSold && burgerSold >= coffeeSold
+      ? "Burger"
+      : pizzaSold >= coffeeSold
+      ? "Pizza"
+      : "Coffee");
+
+  document.getElementById("aiInsight3").innerText =
+    "Top payment method: " +
+    (cashRevenue >= upiRevenue && cashRevenue >= cardRevenue
+      ? "Cash"
+      : upiRevenue >= cardRevenue
+      ? "UPI"
+      : "Card");
+});
+</script>
+
+</body>
+</html>

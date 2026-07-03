@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRUTZ Checkout</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+  padding: 24px;
+}
+
+.checkout-card {
+  width: min(100%, 560px);
+  margin: 0 auto;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  padding: 28px;
+}
+
+h1 {
+  text-align: center;
+  margin: 0 0 8px;
+  font-size: clamp(28px, 6vw, 38px);
+}
+
+.subtitle {
+  text-align: center;
+  color: #666;
+  margin: 0 0 24px;
+}
+
+.section {
+  background: #fff7ec;
+  border: 1px solid #f0dcc1;
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.section h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #ead8bf;
+}
+
+.summary-row:last-child {
+  border-bottom: none;
+}
+
+.summary-row strong {
+  font-size: 18px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 13px;
+  font-size: 16px;
+  font-family: inherit;
+  border: 1px solid #b9a78f;
+  border-radius: 12px;
+  background: #fff;
+  color: #111;
+}
+
+textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid rgba(255, 152, 0, .25);
+  border-color: #ff9800;
+}
+
+.order-type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.order-type-btn {
+  min-height: 86px;
+  border: 2px solid #e1c9a9;
+  border-radius: 15px;
+  background: #fff;
+  color: #111;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.order-type-btn.active {
+  border-color: #ff9800;
+  background: #fff1dd;
+}
+
+.order-type-btn strong {
+  display: block;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.order-type-btn span {
+  color: #666;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.hidden {
+  display: none;
+}
+
+.note {
+  margin: 12px 0 0;
+  color: #666;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.place-order-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 15px 18px;
+  border: none;
+  border-radius: 999px;
+  background: green;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.place-order-btn:hover {
+  background: darkgreen;
+}
+
+.place-order-btn:disabled {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+.message {
+  display: none;
+  margin-top: 14px;
+  padding: 12px;
+  border-radius: 12px;
+  font-weight: bold;
+}
+
+.message.show {
+  display: block;
+}
+
+.message.error {
+  background: #fff1f0;
+  color: #b42318;
+}
+
+.message.success {
+  background: #edfff3;
+  color: #137333;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 14px;
+  }
+
+  .checkout-card {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .order-type-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="checkout-card">
+  <h1>Checkout</h1>
+  <p class="subtitle">Confirm your KRUTZ order</p>
+
+  <section class="section">
+    <h3>Order Summary</h3>
+    <div class="summary-row"><span>Burger</span><strong id="burgerQty">0</strong></div>
+    <div class="summary-row"><span>Pizza</span><strong id="pizzaQty">0</strong></div>
+    <div class="summary-row"><span>Coffee</span><strong id="coffeeQty">0</strong></div>
+    <div class="summary-row"><span>Total</span><strong>Rs.<span id="totalAmount">0</span></strong></div>
+    <div class="summary-row"><span>Table</span><strong id="tableNumberShow">Not selected</strong></div>
+  </section>
+
+  <section class="section">
+    <h3>Customer Details</h3>
+    <div class="field-group">
+      <input id="customerName" type="text" placeholder="Customer Name" maxlength="60">
+      <input id="phoneNumber" type="tel" placeholder="Phone Number" maxlength="15">
+      <input id="tableNumber" type="number" min="1" placeholder="Table Number">
+    </div>
+  </section>
+
+  <section class="section">
+    <h3>Order Type</h3>
+    <div class="order-type-grid">
+      <button class="order-type-btn active" id="orderNowCard" type="button" onclick="selectOrderType('now')">
+        <strong>Order Now</strong>
+        <span>Send this order to the kitchen immediately.</span>
+      </button>
+      <button class="order-type-btn" id="preorderCard" type="button" onclick="selectOrderType('preorder')">
+        <strong>Pre-order</strong>
+        <span>Reserve a table and schedule preparation.</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="section hidden" id="preorderFields">
+    <h3>Pre-order & Reservation Details</h3>
+    <div class="field-group">
+      <input id="arrivalDate" type="date">
+      <input id="arrivalTime" type="time">
+      <input id="guestCount" type="number" min="1" placeholder="Number of Guests">
+      <select id="occasion">
+        <option value="None">Occasion - None</option>
+        <option value="Birthday">Birthday</option>
+        <option value="Anniversary">Anniversary</option>
+        <option value="Business Meeting">Business Meeting</option>
+        <option value="Casual Visit">Casual Visit</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <p class="note">Kitchen start time is calculated automatically from your arrival time.</p>
+  </section>
+
+  <section class="section">
+    <h3>Special Instructions</h3>
+    <textarea id="specialInstructions" maxlength="300" placeholder="Example: less spicy, no onions, birthday setup, window table preference"></textarea>
+  </section>
+
+  <button class="place-order-btn" id="placeOrderBtn" type="button" onclick="placeOrder()">Place Order</button>
+  <div class="message" id="formMessage"></div>
+</div>
+
+<script type="module">
+  import { db, collection, addDoc, serverTimestamp } from "./firebase.js";
+
+  const prices = { burger: 99, pizza: 149, coffee: 79 };
+  const prepMinutes = { burger: 15, pizza: 20, coffee: 5 };
+  const orderData = readOrderData();
+  let selectedOrderType = "now";
+
+  function readOrderData() {
+    try {
+      return JSON.parse(localStorage.getItem("orderData"));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function cleanText(value) {
+    return String(value || "").trim();
+  }
+
+  function cleanPhone(value) {
+    return cleanText(value).replace(/[^\d+\-\s]/g, "");
+  }
+
+  function getPositiveNumber(value) {
+    const number = Number(value);
+    return Number.isFinite(number) && number > 0 ? number : 0;
+  }
+
+  function getItems() {
+    return {
+      burger: getPositiveNumber(orderData?.burger),
+      pizza: getPositiveNumber(orderData?.pizza),
+      coffee: getPositiveNumber(orderData?.coffee)
+    };
+  }
+
+  function calculateTotal(items) {
+    return items.burger * prices.burger + items.pizza * prices.pizza + items.coffee * prices.coffee;
+  }
+
+  function showMessage(text, type) {
+    const message = document.getElementById("formMessage");
+    message.innerText = text;
+    message.className = "message show " + type;
+  }
+
+  function clearMessage() {
+    const message = document.getElementById("formMessage");
+    message.innerText = "";
+    message.className = "message";
+  }
+
+  function fillOrderSummary() {
+    const items = getItems();
+    const storedTotal = getPositiveNumber(orderData?.totalAmount);
+    const finalTotal = storedTotal || calculateTotal(items);
+
+    document.getElementById("burgerQty").innerText = items.burger;
+    document.getElementById("pizzaQty").innerText = items.pizza;
+    document.getElementById("coffeeQty").innerText = items.coffee;
+    document.getElementById("totalAmount").innerText = finalTotal;
+    document.getElementById("tableNumberShow").innerText = orderData?.tableNumber || "Not selected";
+
+    if (orderData?.tableNumber && orderData.tableNumber !== "Not selected") {
+      document.getElementById("tableNumber").value = orderData.tableNumber;
+    }
+  }
+
+  window.selectOrderType = function(type) {
+    selectedOrderType = type;
+    const isPreorder = type === "preorder";
+    document.getElementById("orderNowCard").classList.toggle("active", !isPreorder);
+    document.getElementById("preorderCard").classList.toggle("active", isPreorder);
+    document.getElementById("preorderFields").classList.toggle("hidden", !isPreorder);
+  };
+
+  function calculateKitchenStartTime(arrivalDate, arrivalTime, items) {
+    if (!arrivalDate || !arrivalTime) return "";
+
+    const arrivalDateTime = new Date(arrivalDate + "T" + arrivalTime);
+    if (Number.isNaN(arrivalDateTime.getTime())) return "";
+
+    let maxPrepTime = 0;
+    Object.keys(items).forEach(function(item) {
+      if (items[item] > 0) {
+        maxPrepTime = Math.max(maxPrepTime, prepMinutes[item] || 0);
+      }
+    });
+
+    arrivalDateTime.setMinutes(arrivalDateTime.getMinutes() - maxPrepTime - 10);
+    return arrivalDateTime.toLocaleString();
+  }
+
+  window.placeOrder = async function() {
+    clearMessage();
+
+    if (!orderData) {
+      showMessage("No order found. Please go back to menu and add items.", "error");
+      return;
+    }
+
+    const items = getItems();
+    const totalAmount = getPositiveNumber(orderData.totalAmount) || calculateTotal(items);
+    const name = cleanText(document.getElementById("customerName").value);
+    const phone = cleanPhone(document.getElementById("phoneNumber").value);
+    const table = cleanText(document.getElementById("tableNumber").value);
+    const specialInstructions = cleanText(document.getElementById("specialInstructions").value);
+
+    if (items.burger + items.pizza + items.coffee === 0 || totalAmount === 0) {
+      showMessage("Your cart is empty. Please go back to menu and add items.", "error");
+      return;
+    }
+
+    if (!name || !phone || !table) {
+      showMessage("Please fill customer name, phone number, and table number.", "error");
+      return;
+    }
+
+    let arrivalDate = "";
+    let arrivalTime = "";
+    let guests = 1;
+    let occasion = "None";
+    let kitchenStartTime = "";
+
+    if (selectedOrderType === "preorder") {
+      arrivalDate = document.getElementById("arrivalDate").value;
+      arrivalTime = document.getElementById("arrivalTime").value;
+      guests = getPositiveNumber(document.getElementById("guestCount").value);
+      occasion = document.getElementById("occasion").value;
+
+      if (!arrivalDate || !arrivalTime || guests === 0) {
+        showMessage("Please complete arrival date, arrival time, and guest count.", "error");
+        return;
+      }
+
+      kitchenStartTime = calculateKitchenStartTime(arrivalDate, arrivalTime, items);
+    }
+
+    const placeOrderBtn = document.getElementById("placeOrderBtn");
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.innerText = "Placing Order...";
+
+    try {
+      const docRef = await addDoc(collection(db, "orders"), {
+        customerName: name,
+        phoneNumber: phone,
+        tableNumber: table,
+        guests: guests,
+        occasion: occasion,
+        specialInstructions: specialInstructions,
+        orderType: selectedOrderType === "preorder" ? "Pre-order" : "Order Now",
+        reservationStatus: selectedOrderType === "preorder" ? "Reserved" : "Walk-in",
+        arrivalDate: arrivalDate,
+        arrivalTime: arrivalTime,
+        kitchenStartTime: kitchenStartTime,
+        items: items,
+        totalAmount: totalAmount,
+        status: "Pending",
+        paymentStatus: "Unpaid",
+        paymentMethod: "Not selected",
+        createdAt: serverTimestamp()
+      });
+
+      localStorage.removeItem("orderData");
+      showMessage("Order placed successfully. Opening tracking...", "success");
+      window.location.href = "track.html?id=" + docRef.id;
+    } catch (error) {
+      console.error(error);
+      showMessage("Error placing order. Please try again.", "error");
+      placeOrderBtn.disabled = false;
+      placeOrderBtn.innerText = "Place Order";
+    }
+  };
+
+  fillOrderSummary();
+</script>
+</body>
+</html>

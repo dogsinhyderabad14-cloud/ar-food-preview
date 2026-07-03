@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Notifications</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.column {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 70vh;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.column h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.notification {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  border-left: 6px solid #ff9800;
+}
+
+.notification h3 {
+  margin: 0 0 8px;
+}
+
+.notification p {
+  margin: 6px 0;
+}
+
+.done {
+  background: green;
+  color: white;
+  border: none;
+  padding: 10px 14px;
+  margin-top: 8px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.empty {
+  text-align: center;
+  color: #777;
+  margin-top: 20px;
+}
+
+@media(max-width: 900px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🔔 KRUTZ Live Notifications</h1>
+  <p>Orders, customer requests, payments and restaurant alerts</p>
+</div>
+
+<div class="grid">
+  <div class="column">
+    <h2>👨‍🍳 Kitchen</h2>
+    <div id="kitchenNotifications">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>🧑‍🍳 Waiter</h2>
+    <div id="waiterNotifications">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>👑 Owner / Cashier</h2>
+    <div id="ownerNotifications">Loading...</div>
+  </div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const kitchenBox = document.getElementById("kitchenNotifications");
+const waiterBox = document.getElementById("waiterNotifications");
+const ownerBox = document.getElementById("ownerNotifications");
+
+let ordersData = [];
+let requestsData = [];
+
+function notificationCard(title, message, type, id, source) {
+  return `
+    <div class="notification">
+      <h3>${title}</h3>
+      <p>${message}</p>
+      <p><b>Type:</b> ${type}</p>
+      ${source === "request" ? `<button class="done" onclick="markRequestDone('${id}')">Mark Done</button>` : ""}
+    </div>
+  `;
+}
+
+function renderNotifications() {
+  let kitchenHTML = "";
+  let waiterHTML = "";
+  let ownerHTML = "";
+
+  ordersData.forEach(data => {
+    const id = data.id;
+    const order = data.order;
+
+    const status = order.status || "Pending";
+    const paymentStatus = order.paymentStatus || "Unpaid";
+    const table = order.tableNumber || "No table";
+    const items = order.items || {};
+
+    if (status === "Pending") {
+      kitchenHTML += notificationCard(
+        "🔔 New Order",
+        `Table ${table} | Burger ${items.burger || 0}, Pizza ${items.pizza || 0}, Coffee ${items.coffee || 0}`,
+        "Kitchen Order",
+        id,
+        "order"
+      );
+    }
+
+    if (status === "Ready") {
+      waiterHTML += notificationCard(
+        "🍽 Food Ready",
+        `Table ${table} is ready to serve.`,
+        "Waiter Task",
+        id,
+        "order"
+      );
+    }
+
+    if (status === "Delivered" && paymentStatus !== "Paid") {
+      ownerHTML += notificationCard(
+        "💳 Payment Pending",
+        `Table ${table} bill pending. Amount ₹${order.totalAmount || 0}`,
+        "Cashier Alert",
+        id,
+        "order"
+      );
+    }
+
+    if (paymentStatus === "Paid") {
+      ownerHTML += notificationCard(
+        "✅ Payment Completed",
+        `Table ${table} paid by ${order.paymentMethod || "Unknown"}.`,
+        "Payment",
+        id,
+        "order"
+      );
+    }
+
+    if (order.orderType === "Pre-order" && order.reservationStatus === "Reserved") {
+      ownerHTML += notificationCard(
+        "📅 New Reservation",
+        `Table ${table} reserved for ${order.arrivalDate || "-"} ${order.arrivalTime || "-"}.`,
+        "Reservation",
+        id,
+        "order"
+      );
+    }
+  });
+
+  requestsData.forEach(data => {
+    const id = data.id;
+    const req = data.request;
+
+    if (req.status === "Completed") return;
+
+    waiterHTML += notificationCard(
+      "🔔 Customer Request",
+      `Table ${req.tableNumber} requested: ${req.requestType}`,
+      "Customer Request",
+      id,
+      "request"
+    );
+
+    if (req.requestType === "Request Bill") {
+      ownerHTML += notificationCard(
+        "💳 Bill Requested",
+        `Table ${req.tableNumber} requested the bill.`,
+        "Cashier Alert",
+        id,
+        "request"
+      );
+    }
+
+    if (req.requestType === "Complaint") {
+      ownerHTML += notificationCard(
+        "❗ Customer Complaint",
+        `Table ${req.tableNumber} submitted a complaint.`,
+        "Manager Alert",
+        id,
+        "request"
+      );
+    }
+  });
+
+  kitchenBox.innerHTML = kitchenHTML || "<div class='empty'>No kitchen notifications</div>";
+  waiterBox.innerHTML = waiterHTML || "<div class='empty'>No waiter notifications</div>";
+  ownerBox.innerHTML = ownerHTML || "<div class='empty'>No owner/cashier notifications</div>";
+}
+
+onSnapshot(collection(db, "orders"), function(snapshot) {
+  ordersData = [];
+
+  snapshot.forEach(function(orderDoc) {
+    ordersData.push({
+      id: orderDoc.id,
+      order: orderDoc.data()
+    });
+  });
+
+  renderNotifications();
+});
+
+onSnapshot(collection(db, "requests"), function(snapshot) {
+  requestsData = [];
+
+  snapshot.forEach(function(requestDoc) {
+    requestsData.push({
+      id: requestDoc.id,
+      request: requestDoc.data()
+    });
+  });
+
+  renderNotifications();
+});
+
+window.markRequestDone = async function(id) {
+  await updateDoc(doc(db, "requests", id), {
+    status: "Completed"
+  });
+};
+</script>
+
+</body>
+</html>

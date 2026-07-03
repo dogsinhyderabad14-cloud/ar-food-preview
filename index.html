@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRUTZ Food AR Menu</title>
+
+<script type="module" src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js"></script>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+}
+
+header {
+  text-align: center;
+  background: #111;
+  color: white;
+  padding: 25px 15px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 32px;
+}
+
+header p {
+  color: #f5c542;
+  margin-top: 8px;
+}
+
+.header-buttons {
+  margin-top: 20px;
+}
+
+.scanner-btn {
+  background: #ff9800;
+  color: white;
+  border: none;
+  padding: 14px 28px;
+  font-size: 18px;
+  font-weight: bold;
+  border-radius: 30px;
+  cursor: pointer;
+}
+
+.table-box {
+  width: fit-content;
+  margin: 20px auto 0;
+  background: white;
+  padding: 15px 30px;
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  border-radius: 15px;
+  box-shadow: 0 5px 15px rgba(0,0,0,.15);
+}
+
+.cart {
+  background: white;
+  width: fit-content;
+  margin: 20px auto 10px;
+  padding: 12px 35px;
+  border-radius: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.checkout-box {
+  text-align: center;
+  margin: 15px 0 25px;
+}
+
+.checkout-btn {
+  background: green;
+  color: white;
+  border: none;
+  padding: 14px 30px;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.voice-btn {
+  background: #ff5722;
+  padding: 15px 35px;
+  font-size: 18px;
+  border-radius: 30px;
+}
+
+.service-box {
+  background: white;
+  max-width: 700px;
+  margin: 25px auto;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.service-box h3 {
+  margin-top: 0;
+}
+
+.service-box button {
+  background: #ff9800;
+  margin: 6px;
+}
+
+.menu {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  padding: 35px 6%;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 25px 20px;
+  text-align: center;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.12);
+}
+
+.rating {
+  color: #ff9800;
+  font-size: 18px;
+  margin-bottom: 15px;
+}
+
+.card h2 {
+  font-size: 26px;
+  margin: 10px 0 20px;
+}
+
+model-viewer {
+  width: 100%;
+  height: 260px;
+  background: #eeeeee;
+  border-radius: 14px;
+}
+
+.desc {
+  font-size: 16px;
+  color: #444;
+  min-height: 45px;
+  margin: 18px 0 10px;
+}
+
+.price {
+  font-size: 26px;
+  color: green;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+button {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #333;
+}
+
+.qty {
+  font-size: 22px;
+  font-weight: bold;
+  margin: 0 12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>KRUTZ Food AR Menu</h1>
+  <p>View food in 3D and place it on your table using AR</p>
+
+  <div class="header-buttons">
+    <button class="scanner-btn" onclick="openScanner()">📷 Scan Table QR</button>
+  </div>
+</header>
+
+<div class="table-box">
+  🍽️ Table Number: <span id="tableNumber">Loading...</span>
+</div>
+
+<div class="cart">
+  🛒 Cart: <span id="cartCount">0</span> items | Total: ₹<span id="cartTotal">0</span>
+</div>
+
+<div class="checkout-box">
+  <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+
+  <br><br>
+
+  <button class="voice-btn" onclick="startVoiceOrder()">🎤 Voice Order</button>
+
+  <p id="voiceStatus" style="margin-top:15px;font-weight:bold;color:#ff5722;"></p>
+</div>
+
+<div class="service-box">
+  <h3>Need Service?</h3>
+  <button onclick="sendCustomerRequest('Water')">💧 Water</button>
+  <button onclick="sendCustomerRequest('Call Waiter')">🙋 Call Waiter</button>
+  <button onclick="sendCustomerRequest('Request Bill')">🧾 Request Bill</button>
+  <button onclick="sendCustomerRequest('Extra Plates')">🍽 Extra Plates</button>
+  <button onclick="sendCustomerRequest('Need Help')">❓ Need Help</button>
+</div>
+<section class="menu">
+
+  <div class="card">
+    <div class="rating">⭐ ⭐ ⭐ ⭐ ⭐ 4.8</div>
+    <h2>Chicken Burger 🤍</h2>
+
+    <model-viewer
+      src="burger.glb"
+      ios-src="burger.usdz"
+      alt="Chicken Burger 3D Model"
+      camera-controls
+      auto-rotate
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      shadow-intensity="1">
+    </model-viewer>
+
+    <p class="desc">Juicy grilled chicken burger with fresh lettuce, cheese and special sauce.</p>
+    <div class="price">₹99</div>
+
+    <div>
+      <button onclick="removeItem('burger')">−</button>
+      <span class="qty" id="burgerQty">0</span>
+      <button onclick="addItem('burger')">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="rating">⭐ ⭐ ⭐ ⭐ 4.5</div>
+    <h2>Pizza 🤍</h2>
+
+    <model-viewer
+      src="pizza.glb"
+      ios-src="pizza.usdz"
+      alt="Pizza 3D Model"
+      camera-controls
+      auto-rotate
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      shadow-intensity="1">
+    </model-viewer>
+
+    <p class="desc">Cheesy pizza with soft crust, tomato sauce and fresh toppings.</p>
+    <div class="price">₹149</div>
+
+    <div>
+      <button onclick="removeItem('pizza')">−</button>
+      <span class="qty" id="pizzaQty">0</span>
+      <button onclick="addItem('pizza')">+</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="rating">⭐ ⭐ ⭐ ⭐ ⭐ 4.7</div>
+    <h2>Coffee 🤍</h2>
+
+    <model-viewer
+      src="coffee_cup.glb"
+      ios-src="coffee_cup.usdz"
+      alt="Coffee 3D Model"
+      camera-controls
+      auto-rotate
+      ar
+      ar-modes="webxr scene-viewer quick-look"
+      shadow-intensity="1">
+    </model-viewer>
+
+    <p class="desc">Hot premium coffee with rich aroma and creamy texture.</p>
+    <div class="price">₹79</div>
+
+    <div>
+      <button onclick="removeItem('coffee')">−</button>
+      <span class="qty" id="coffeeQty">0</span>
+      <button onclick="addItem('coffee')">+</button>
+    </div>
+  </div>
+
+</section>
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const prices = {
+  burger: 99,
+  pizza: 149,
+  coffee: 79
+};
+
+const cart = {
+  burger: 0,
+  pizza: 0,
+  coffee: 0
+};
+
+let selectedTable = "Not selected";
+
+window.addEventListener("DOMContentLoaded", function () {
+  const params = new URLSearchParams(window.location.search);
+  const table = params.get("table");
+
+  if (table) {
+    selectedTable = table;
+    localStorage.setItem("selectedTable", table);
+  } else {
+    selectedTable = localStorage.getItem("selectedTable") || "Not selected";
+  }
+
+  document.getElementById("tableNumber").innerText = selectedTable;
+});
+
+window.addItem = function(item) {
+  cart[item]++;
+  updateCart();
+};
+
+window.removeItem = function(item) {
+  if (cart[item] > 0) {
+    cart[item]--;
+  }
+
+  updateCart();
+};
+
+function updateCart() {
+  const totalItems = cart.burger + cart.pizza + cart.coffee;
+
+  const totalPrice =
+    cart.burger * prices.burger +
+    cart.pizza * prices.pizza +
+    cart.coffee * prices.coffee;
+
+  document.getElementById("burgerQty").innerText = cart.burger;
+  document.getElementById("pizzaQty").innerText = cart.pizza;
+  document.getElementById("coffeeQty").innerText = cart.coffee;
+
+  document.getElementById("cartCount").innerText = totalItems;
+  document.getElementById("cartTotal").innerText = totalPrice;
+}
+
+window.openScanner = function() {
+  alert("For QR testing, open: index.html?table=1");
+};
+
+window.goToCheckout = function() {
+  const total = document.getElementById("cartTotal").innerText;
+
+  if (Number(total) === 0) {
+    alert("Please add at least one item before checkout.");
+    return;
+  }
+
+  if (selectedTable === "Not selected") {
+    alert("Table not selected. Open menu using table QR link like index.html?table=1");
+    return;
+  }
+
+  const orderData = {
+    burger: cart.burger,
+    pizza: cart.pizza,
+    coffee: cart.coffee,
+    totalAmount: Number(total),
+    tableNumber: selectedTable
+  };
+
+  localStorage.setItem("orderData", JSON.stringify(orderData));
+
+  window.location.href = "checkout.html";
+};
+
+window.startVoiceOrder = function() {
+  const SpeechRecognition =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Speech Recognition is not supported in this browser. Use Google Chrome.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+
+  recognition.lang = "en-IN";
+  recognition.start();
+
+  document.getElementById("voiceStatus").innerText = "🎤 Listening...";
+
+  recognition.onresult = function(event) {
+    const speech = event.results[0][0].transcript.toLowerCase();
+
+    document.getElementById("voiceStatus").innerText = "You said: " + speech;
+
+    parseVoiceOrder(speech);
+  };
+
+  recognition.onerror = function() {
+    document.getElementById("voiceStatus").innerText = "Voice recognition failed.";
+  };
+};
+
+function getNumberFromText(text) {
+  const numberWords = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5
+  };
+
+  for (const word in numberWords) {
+    if (text.includes(word)) {
+      return numberWords[word];
+    }
+  }
+
+  const match = text.match(/\d+/);
+
+  if (match) {
+    return parseInt(match[0]);
+  }
+
+  return 1;
+}
+
+function parseVoiceOrder(text) {
+  if (text.includes("burger")) {
+    cart.burger += getNumberFromText(text);
+  }
+
+  if (text.includes("pizza")) {
+    cart.pizza += getNumberFromText(text);
+  }
+
+  if (text.includes("coffee")) {
+    cart.coffee += getNumberFromText(text);
+  }
+
+  updateCart();
+}
+
+window.sendCustomerRequest = async function(type) {
+  if (selectedTable === "Not selected") {
+    alert("Table not selected. Please scan table QR first.");
+    return;
+  }
+
+  await addDoc(collection(db, "requests"), {
+    tableNumber: selectedTable,
+    requestType: type,
+    status: "Pending",
+    createdAt: serverTimestamp()
+  });
+
+  alert(type + " request sent to waiter!");
+};
+</script>
+
+</body>
+</html>

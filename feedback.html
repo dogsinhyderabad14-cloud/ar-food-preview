@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Feedback</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.box {
+  background: white;
+  padding: 22px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  max-width: 600px;
+  margin: auto;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+textarea {
+  min-height: 100px;
+}
+
+button {
+  width: 100%;
+  border: none;
+  padding: 14px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  background: green;
+  color: white;
+  font-size: 17px;
+}
+
+.stars {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  font-size: 34px;
+  margin: 15px 0;
+}
+
+.star {
+  cursor: pointer;
+  color: #ccc;
+}
+
+.star.active {
+  color: #ff9800;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>⭐ KRUTZ Customer Feedback</h1>
+  <p>Help us improve your restaurant experience</p>
+</div>
+
+<div class="box">
+  <input id="customerName" placeholder="Your Name">
+  <input id="tableNumber" placeholder="Table Number">
+
+  <h3>Rate Your Experience</h3>
+  <div class="stars">
+    <span class="star" onclick="setRating(1)">★</span>
+    <span class="star" onclick="setRating(2)">★</span>
+    <span class="star" onclick="setRating(3)">★</span>
+    <span class="star" onclick="setRating(4)">★</span>
+    <span class="star" onclick="setRating(5)">★</span>
+  </div>
+
+  <select id="foodQuality">
+    <option value="">Food Quality</option>
+    <option>Excellent</option>
+    <option>Good</option>
+    <option>Average</option>
+    <option>Poor</option>
+  </select>
+
+  <select id="serviceQuality">
+    <option value="">Service Quality</option>
+    <option>Excellent</option>
+    <option>Good</option>
+    <option>Average</option>
+    <option>Poor</option>
+  </select>
+
+  <select id="recommend">
+    <option value="">Would you recommend us?</option>
+    <option>Yes</option>
+    <option>No</option>
+  </select>
+
+  <textarea id="review" placeholder="Write your feedback..."></textarea>
+
+  <button onclick="submitFeedback()">Submit Feedback</button>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+let rating = 0;
+
+window.setRating = function(value) {
+  rating = value;
+
+  document.querySelectorAll(".star").forEach((star, index) => {
+    if (index < value) {
+      star.classList.add("active");
+    } else {
+      star.classList.remove("active");
+    }
+  });
+};
+
+window.submitFeedback = async function() {
+  const customerName = document.getElementById("customerName").value.trim();
+  const tableNumber = document.getElementById("tableNumber").value.trim();
+  const foodQuality = document.getElementById("foodQuality").value;
+  const serviceQuality = document.getElementById("serviceQuality").value;
+  const recommend = document.getElementById("recommend").value;
+  const review = document.getElementById("review").value.trim();
+
+  if (!customerName || !tableNumber || rating === 0) {
+    alert("Please enter name, table number and rating.");
+    return;
+  }
+
+  await addDoc(collection(db, "feedback"), {
+    customerName,
+    tableNumber,
+    rating,
+    foodQuality,
+    serviceQuality,
+    recommend,
+    review,
+    createdAt: serverTimestamp()
+  });
+
+  alert("Thank you for your feedback!");
+
+  document.getElementById("customerName").value = "";
+  document.getElementById("tableNumber").value = "";
+  document.getElementById("foodQuality").value = "";
+  document.getElementById("serviceQuality").value = "";
+  document.getElementById("recommend").value = "";
+  document.getElementById("review").value = "";
+  setRating(0);
+};
+</script>
+
+</body>
+</html>

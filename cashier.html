@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRUTZ Cashier Pro</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #fff2df;
+      color: #111;
+      padding: 22px;
+    }
+
+    .app {
+      max-width: 1250px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      background: #111;
+      color: white;
+      padding: 24px;
+      border-radius: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      box-shadow: 0 8px 25px rgba(0,0,0,.18);
+    }
+
+    .topbar h1 {
+      font-size: clamp(28px, 5vw, 42px);
+      color: #ff9800;
+    }
+
+    .topbar p {
+      color: #f5c542;
+      margin-top: 6px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(160px, 1fr));
+      gap: 16px;
+      margin: 22px 0;
+    }
+
+    .stat-card {
+      background: white;
+      padding: 18px;
+      border-radius: 18px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.12);
+    }
+
+    .stat-card h3 {
+      color: #555;
+      font-size: 15px;
+      margin-bottom: 8px;
+    }
+
+    .stat-card strong {
+      font-size: 30px;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .column {
+      background: white;
+      border-radius: 20px;
+      padding: 18px;
+      min-height: 520px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.12);
+    }
+
+    .column-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      margin-bottom: 16px;
+      border-bottom: 2px solid #fff2df;
+    }
+
+    .column-title h2 {
+      font-size: 24px;
+    }
+
+    .badge {
+      background: #111;
+      color: white;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-weight: bold;
+    }
+
+    .order-card {
+      background: #fff7ec;
+      border: 1px solid #ecd3b0;
+      border-radius: 18px;
+      padding: 16px;
+      margin-bottom: 15px;
+    }
+
+    .order-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+      align-items: flex-start;
+    }
+
+    .order-head h3 {
+      font-size: 22px;
+    }
+
+    .order-id {
+      font-size: 12px;
+      color: #666;
+      word-break: break-all;
+      text-align: right;
+    }
+
+    .details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px 12px;
+      margin: 12px 0;
+      color: #333;
+    }
+
+    .items {
+      background: white;
+      border-radius: 14px;
+      padding: 12px;
+      margin: 12px 0;
+      line-height: 1.7;
+    }
+
+    .bill {
+      background: #111;
+      color: white;
+      border-radius: 14px;
+      padding: 13px;
+      font-size: 22px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 12px 0;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .print-row {
+      margin-top: 8px;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 11px 12px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .cash {
+      background: #ff9800;
+      color: #111;
+    }
+
+    .upi {
+      background: #20c997;
+      color: #111;
+    }
+
+    .card {
+      background: #4dabf7;
+      color: #111;
+    }
+
+    .print {
+      width: 100%;
+      background: #111;
+      color: white;
+    }
+
+    .empty {
+      color: #777;
+      text-align: center;
+      padding: 50px 12px;
+      background: #fff7ec;
+      border-radius: 18px;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: white;
+      font-weight: bold;
+      color: #333;
+    }
+
+    @media (max-width: 900px) {
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .board {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 14px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
+      }
+
+      .details {
+        grid-template-columns: 1fr;
+      }
+
+      .actions {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div>
+        <h1>KRUTZ Cashier Pro</h1>
+        <p>Live billing, payment collection, and receipt printing</p>
+      </div>
+      <strong id="liveStatus">Connecting...</strong>
+    </header>
+
+    <section class="stats">
+      <div class="stat-card">
+        <h3>Unpaid Bills</h3>
+        <strong id="unpaidCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <h3>Paid Orders</h3>
+        <strong id="paidCount">0</strong>
+      </div>
+      <div class="stat-card">
+        <h3>Pending Collection</h3>
+        <strong>Rs.<span id="pendingAmount">0</span></strong>
+      </div>
+      <div class="stat-card">
+        <h3>Collected</h3>
+        <strong>Rs.<span id="paidAmount">0</span></strong>
+      </div>
+    </section>
+
+    <main class="board">
+      <section class="column">
+        <div class="column-title">
+          <h2>Unpaid Orders</h2>
+          <span class="badge" id="unpaidBadge">0</span>
+        </div>
+        <div id="unpaidOrders">
+          <div class="empty">Loading unpaid orders...</div>
+        </div>
+      </section>
+
+      <section class="column">
+        <div class="column-title">
+          <h2>Paid Orders</h2>
+          <span class="badge" id="paidBadge">0</span>
+        </div>
+        <div id="paidOrders">
+          <div class="empty">Loading paid orders...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+
+    import {
+      collection,
+      onSnapshot,
+      doc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const unpaidOrdersEl = document.getElementById("unpaidOrders");
+    const paidOrdersEl = document.getElementById("paidOrders");
+    const unpaidCountEl = document.getElementById("unpaidCount");
+    const paidCountEl = document.getElementById("paidCount");
+    const pendingAmountEl = document.getElementById("pendingAmount");
+    const paidAmountEl = document.getElementById("paidAmount");
+    const unpaidBadgeEl = document.getElementById("unpaidBadge");
+    const paidBadgeEl = document.getElementById("paidBadge");
+    const liveStatusEl = document.getElementById("liveStatus");
+
+    const ordersById = new Map();
+
+    function escapeHTML(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function money(value) {
+      return Number(value || 0).toLocaleString("en-IN");
+    }
+
+    function getCreatedTime(order) {
+      if (order.createdAt && typeof order.createdAt.toDate === "function") {
+        return order.createdAt.toDate().getTime();
+      }
+
+      return 0;
+    }
+
+    function getOrderDate(order) {
+      if (order.createdAt && typeof order.createdAt.toDate === "function") {
+        return order.createdAt.toDate().toLocaleString();
+      }
+
+      return "-";
+    }
+
+    function getItemsText(items) {
+      const safeItems = items || {};
+
+      return `
+        Burger x ${Number(safeItems.burger || 0)}<br>
+        Pizza x ${Number(safeItems.pizza || 0)}<br>
+        Coffee x ${Number(safeItems.coffee || 0)}
+      `;
+    }
+
+    function createOrderCard(id, order, isPaid) {
+      const items = order.items || {};
+      const tableNumber = escapeHTML(order.tableNumber || "No table");
+      const customerName = escapeHTML(order.customerName || "Customer");
+      const phoneNumber = escapeHTML(order.phoneNumber || "-");
+      const status = escapeHTML(order.status || "Pending");
+      const paymentStatus = escapeHTML(order.paymentStatus || "Unpaid");
+      const paymentMethod = escapeHTML(order.paymentMethod || "Not selected");
+      const orderType = escapeHTML(order.orderType || "Order Now");
+      const totalAmount = money(order.totalAmount);
+      const shortId = escapeHTML(id.slice(0, 8));
+
+      return `
+        <article class="order-card" data-order-id="${escapeHTML(id)}">
+          <div class="order-head">
+            <div>
+              <h3>Table ${tableNumber}</h3>
+              <span class="status">${status}</span>
+            </div>
+            <div class="order-id">#${shortId}</div>
+          </div>
+
+          <div class="details">
+            <p><b>Name:</b> ${customerName}</p>
+            <p><b>Phone:</b> ${phoneNumber}</p>
+            <p><b>Type:</b> ${orderType}</p>
+            <p><b>Payment:</b> ${paymentStatus}</p>
+            <p><b>Method:</b> ${paymentMethod}</p>
+            <p><b>Date:</b> ${escapeHTML(getOrderDate(order))}</p>
+          </div>
+
+          <div class="items">
+            <b>Items</b><br>
+            Burger x ${Number(items.burger || 0)}<br>
+            Pizza x ${Number(items.pizza || 0)}<br>
+            Coffee x ${Number(items.coffee || 0)}
+          </div>
+
+          <div class="bill">
+            <span>Total</span>
+            <span>Rs.${totalAmount}</span>
+          </div>
+
+          ${
+            isPaid
+              ? ""
+              : `
+                <div class="actions">
+                  <button class="cash" type="button" data-action="pay" data-method="Cash" data-id="${escapeHTML(id)}">Cash</button>
+                  <button class="upi" type="button" data-action="pay" data-method="UPI" data-id="${escapeHTML(id)}">UPI</button>
+                  <button class="card" type="button" data-action="pay" data-method="Card" data-id="${escapeHTML(id)}">Card</button>
+                </div>
+              `
+          }
+
+          <div class="print-row">
+            <button class="print" type="button" data-action="print" data-id="${escapeHTML(id)}">Print Receipt</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderOrders(snapshot) {
+      const unpaidOrders = [];
+      const paidOrders = [];
+
+      ordersById.clear();
+
+      snapshot.forEach(function(orderDoc) {
+        const order = orderDoc.data();
+        const id = orderDoc.id;
+        const paymentStatus = order.paymentStatus || "Unpaid";
+        const status = order.status || "Pending";
+
+        ordersById.set(id, order);
+
+        if (paymentStatus === "Paid") {
+          paidOrders.push({ id, order });
+        } else if (paymentStatus !== "Paid") {
+  unpaidOrders.push({ id, order });
+}
+      });
+
+      unpaidOrders.sort((a, b) => getCreatedTime(b.order) - getCreatedTime(a.order));
+      paidOrders.sort((a, b) => getCreatedTime(b.order) - getCreatedTime(a.order));
+
+      const unpaidAmount = unpaidOrders.reduce(function(total, entry) {
+        return total + Number(entry.order.totalAmount || 0);
+      }, 0);
+
+      const collectedAmount = paidOrders.reduce(function(total, entry) {
+        return total + Number(entry.order.totalAmount || 0);
+      }, 0);
+
+      unpaidOrdersEl.innerHTML = unpaidOrders.length
+        ? unpaidOrders.map(function(entry) {
+            return createOrderCard(entry.id, entry.order, false);
+          }).join("")
+        : `<div class="empty">No ready or delivered unpaid orders.</div>`;
+
+      paidOrdersEl.innerHTML = paidOrders.length
+        ? paidOrders.map(function(entry) {
+            return createOrderCard(entry.id, entry.order, true);
+          }).join("")
+        : `<div class="empty">No paid orders yet.</div>`;
+
+      unpaidCountEl.innerText = unpaidOrders.length;
+      paidCountEl.innerText = paidOrders.length;
+      unpaidBadgeEl.innerText = unpaidOrders.length;
+      paidBadgeEl.innerText = paidOrders.length;
+      pendingAmountEl.innerText = money(unpaidAmount);
+      paidAmountEl.innerText = money(collectedAmount);
+      liveStatusEl.innerText = "Live";
+    }
+
+    async function markPaid(orderId, method) {
+      const orderRef = doc(db, "orders", orderId);
+
+      await updateDoc(orderRef, {
+        paymentStatus: "Paid",
+        paymentMethod: method,
+        status: "Completed"
+      });
+    }
+
+    function printReceipt(orderId) {
+  const order = ordersById.get(orderId);
+
+  if (!order) {
+    alert("Order not found for receipt.");
+    return;
+  }
+
+  const items = order.items || {};
+
+  const receiptWindow = window.open("", "_blank");
+
+  receiptWindow.document.write(
+    "<h1>KRUTZ Receipt</h1>" +
+    "<p><b>Order ID:</b> " + orderId + "</p>" +
+    "<p><b>Table:</b> " + (order.tableNumber || "No table") + "</p>" +
+    "<p><b>Customer:</b> " + (order.customerName || "Customer") + "</p>" +
+    "<hr>" +
+    "<p>Burger x " + (items.burger || 0) + "</p>" +
+    "<p>Pizza x " + (items.pizza || 0) + "</p>" +
+    "<p>Coffee x " + (items.coffee || 0) + "</p>" +
+    "<hr>" +
+    "<h2>Total: Rs." + money(order.totalAmount) + "</h2>" +
+    "<p>Payment: " + (order.paymentStatus || "Unpaid") + "</p>" +
+    "<p>Method: " + (order.paymentMethod || "Not selected") + "</p>" +
+    "<button onclick='window.print()'>Print</button>"
+  );
+
+  receiptWindow.document.close();
+}
+document.addEventListener("click", async function(event) {
+      const button = event.target.closest("button[data-action]");
+
+      if (!button) {
+        return;
+      }
+
+      const action = button.dataset.action;
+      const orderId = button.dataset.id;
+
+      if (action === "pay") {
+        const method = button.dataset.method;
+        button.disabled = true;
+        button.innerText = "Saving...";
+
+        try {
+          await markPaid(orderId, method);
+        } catch (error) {
+          console.error(error);
+          alert("Could not mark order as paid.");
+          button.disabled = false;
+          button.innerText = method;
+        }
+      }
+
+      if (action === "print") {
+        printReceipt(orderId);
+      }
+    });
+
+    onSnapshot(
+      collection(db, "orders"),
+      function(snapshot) {
+        renderOrders(snapshot);
+      },
+      function(error) {
+        console.error(error);
+        liveStatusEl.innerText = "Offline";
+        unpaidOrdersEl.innerHTML = `<div class="empty">Could not load unpaid orders.</div>`;
+        paidOrdersEl.innerHTML = `<div class="empty">Could not load paid orders.</div>`;
+      }
+    );
+  </script>
+</body>
+</html>

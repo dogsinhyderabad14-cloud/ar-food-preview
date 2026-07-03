@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ AI Waiter</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #fff2df;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.box {
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  max-width: 650px;
+  margin: auto;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+textarea {
+  width: 100%;
+  min-height: 110px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #aaa;
+  font-size: 17px;
+  box-sizing: border-box;
+}
+
+button {
+  border: none;
+  padding: 14px 22px;
+  margin: 8px 4px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.mic { background: #ff5722; color: white; }
+.parse { background: #111; color: white; }
+.checkout { background: green; color: white; width: 100%; }
+
+.result {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-top: 20px;
+  font-size: 18px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🤖 KRUTZ AI Waiter</h1>
+  <p>Speak or type your order naturally</p>
+</div>
+
+<div class="box">
+  <textarea id="orderText" placeholder="Example: two burgers one pizza one coffee no onions"></textarea>
+
+  <br>
+
+  <button class="mic" onclick="startVoice()">🎤 Speak Order</button>
+  <button class="parse" onclick="parseOrder()">🤖 Understand Order</button>
+
+  <div class="result">
+    <h3>AI Cart</h3>
+    <p>🍔 Burger: <span id="burgerQty">0</span></p>
+    <p>🍕 Pizza: <span id="pizzaQty">0</span></p>
+    <p>☕ Coffee: <span id="coffeeQty">0</span></p>
+    <p><b>Total:</b> ₹<span id="totalAmount">0</span></p>
+    <p><b>Instructions:</b> <span id="instructions">None</span></p>
+  </div>
+
+  <button class="checkout" onclick="goToCheckout()">Proceed to Checkout</button>
+</div>
+
+<script>
+const prices = {
+  burger: 99,
+  pizza: 149,
+  coffee: 79
+};
+
+let cart = {
+  burger: 0,
+  pizza: 0,
+  coffee: 0,
+  instructions: ""
+};
+
+function wordToNumber(text) {
+  const map = {
+    one: 1,
+    two: 2,
+    three: 3,
+    four: 4,
+    five: 5,
+    six: 6,
+    seven: 7,
+    eight: 8,
+    nine: 9,
+    ten: 10
+  };
+
+  return map[text] || Number(text) || 1;
+}
+
+function extractQty(text, item) {
+  const words = text.toLowerCase().split(/\s+/);
+
+  for (let i = 0; i < words.length; i++) {
+    if (words[i].includes(item)) {
+      const previous = words[i - 1];
+      return wordToNumber(previous);
+    }
+  }
+
+  return text.includes(item) ? 1 : 0;
+}
+
+function parseOrder() {
+  const text = document.getElementById("orderText").value.toLowerCase();
+
+  cart.burger = extractQty(text, "burger");
+  cart.pizza = extractQty(text, "pizza");
+  cart.coffee = extractQty(text, "coffee");
+
+  let instructions = [];
+
+  if (text.includes("no onion") || text.includes("no onions")) {
+    instructions.push("No onions");
+  }
+
+  if (text.includes("extra spicy")) {
+    instructions.push("Extra spicy");
+  }
+
+  if (text.includes("less spicy")) {
+    instructions.push("Less spicy");
+  }
+
+  if (text.includes("without cheese")) {
+    instructions.push("Without cheese");
+  }
+
+  cart.instructions = instructions.join(", ") || "None";
+
+  updateUI();
+}
+
+function updateUI() {
+  const total =
+    cart.burger * prices.burger +
+    cart.pizza * prices.pizza +
+    cart.coffee * prices.coffee;
+
+  document.getElementById("burgerQty").innerText = cart.burger;
+  document.getElementById("pizzaQty").innerText = cart.pizza;
+  document.getElementById("coffeeQty").innerText = cart.coffee;
+  document.getElementById("totalAmount").innerText = total;
+  document.getElementById("instructions").innerText = cart.instructions;
+}
+
+function startVoice() {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition) {
+    alert("Use Google Chrome for voice ordering.");
+    return;
+  }
+
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-IN";
+  recognition.start();
+
+  recognition.onresult = function(event) {
+    const speech = event.results[0][0].transcript;
+    document.getElementById("orderText").value = speech;
+    parseOrder();
+  };
+}
+
+function goToCheckout() {
+  const total = Number(document.getElementById("totalAmount").innerText);
+
+  if (total === 0) {
+    alert("Please add an order first.");
+    return;
+  }
+
+  const selectedTable =
+    localStorage.getItem("selectedTable") || "AI Order";
+
+  const orderData = {
+    burger: cart.burger,
+    pizza: cart.pizza,
+    coffee: cart.coffee,
+    totalAmount: total,
+    tableNumber: selectedTable,
+    specialInstructions: cart.instructions
+  };
+
+  localStorage.setItem("orderData", JSON.stringify(orderData));
+
+  window.location.href = "checkout.html";
+}
+</script>
+
+</body>
+</html>

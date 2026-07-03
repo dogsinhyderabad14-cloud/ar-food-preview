@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRUTZ Reservations</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.column {
+  background: white;
+  border-radius: 18px;
+  padding: 18px;
+  min-height: 70vh;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.column h2 {
+  text-align: center;
+  margin-top: 0;
+}
+
+.res-card {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+
+.table {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.arrived { background: green; color: white; }
+.cancel { background: red; color: white; }
+.complete { background: #111; color: white; }
+
+.empty {
+  text-align: center;
+  color: #777;
+  margin-top: 20px;
+}
+
+@media(max-width: 900px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>📅 KRUTZ Reservations</h1>
+  <p>Manage pre-orders, table reservations and guest arrivals</p>
+</div>
+
+<div class="board">
+  <div class="column">
+    <h2>🔵 Reserved</h2>
+    <div id="reservedOrders">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>🟢 Arrived</h2>
+    <div id="arrivedOrders">Loading...</div>
+  </div>
+
+  <div class="column">
+    <h2>✅ Completed / Cancelled</h2>
+    <div id="completedOrders">Loading...</div>
+  </div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const reservedOrders = document.getElementById("reservedOrders");
+const arrivedOrders = document.getElementById("arrivedOrders");
+const completedOrders = document.getElementById("completedOrders");
+
+function reservationCard(id, order, type) {
+  let buttons = "";
+
+  if (type === "reserved") {
+    buttons = `
+      <button class="arrived" onclick="markArrived('${id}')">Mark Arrived</button>
+      <button class="cancel" onclick="cancelReservation('${id}')">Cancel</button>
+    `;
+  }
+
+  if (type === "arrived") {
+    buttons = `
+      <button class="complete" onclick="completeReservation('${id}')">Complete</button>
+    `;
+  }
+
+  return `
+    <div class="res-card">
+      <div class="table">Table ${order.tableNumber || "Not assigned"}</div>
+
+      <p><b>Customer:</b> ${order.customerName || "-"}</p>
+      <p><b>Phone:</b> ${order.phoneNumber || "-"}</p>
+      <p><b>Guests:</b> ${order.guests || "-"}</p>
+      <p><b>Arrival:</b> ${order.arrivalDate || "-"} ${order.arrivalTime || "-"}</p>
+      <p><b>Occasion:</b> ${order.occasion || "-"}</p>
+      <p><b>Instructions:</b> ${order.specialInstructions || "-"}</p>
+      <p><b>Status:</b> ${order.reservationStatus || "Reserved"}</p>
+
+      ${buttons}
+    </div>
+  `;
+}
+
+onSnapshot(collection(db, "orders"), function(snapshot) {
+  let reservedHTML = "";
+  let arrivedHTML = "";
+  let completedHTML = "";
+
+  snapshot.forEach(function(orderDoc) {
+    const id = orderDoc.id;
+    const order = orderDoc.data();
+
+    if (order.orderType !== "Pre-order") return;
+
+    const reservationStatus = order.reservationStatus || "Reserved";
+
+    if (reservationStatus === "Reserved") {
+      reservedHTML += reservationCard(id, order, "reserved");
+    } else if (reservationStatus === "Arrived") {
+      arrivedHTML += reservationCard(id, order, "arrived");
+    } else {
+      completedHTML += reservationCard(id, order, "completed");
+    }
+  });
+
+  reservedOrders.innerHTML = reservedHTML || "<div class='empty'>No reserved tables</div>";
+  arrivedOrders.innerHTML = arrivedHTML || "<div class='empty'>No arrived guests</div>";
+  completedOrders.innerHTML = completedHTML || "<div class='empty'>No completed/cancelled reservations</div>";
+});
+
+window.markArrived = async function(id) {
+  await updateDoc(doc(db, "orders", id), {
+    reservationStatus: "Arrived",
+    status: "Preparing"
+  });
+};
+
+window.cancelReservation = async function(id) {
+  await updateDoc(doc(db, "orders", id), {
+    reservationStatus: "Cancelled",
+    status: "Cancelled"
+  });
+};
+
+window.completeReservation = async function(id) {
+  await updateDoc(doc(db, "orders", id), {
+    reservationStatus: "Completed"
+  });
+};
+</script>
+
+</body>
+</html>

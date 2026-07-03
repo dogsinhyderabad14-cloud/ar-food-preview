@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Inventory Management</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #555;
+}
+
+.number {
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.inventory-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.item {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 15px;
+  align-items: center;
+}
+
+.good {
+  border-left: 8px solid green;
+}
+
+.low {
+  border-left: 8px solid orange;
+}
+
+.critical {
+  border-left: 8px solid red;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 3px;
+}
+
+.add {
+  background: green;
+  color: white;
+}
+
+.remove {
+  background: red;
+  color: white;
+}
+
+@media(max-width: 700px) {
+  .item {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>📦 KRUTZ Inventory Management</h1>
+  <p>Track ingredients, low stock, and kitchen supply status</p>
+</div>
+
+<div class="stats">
+  <div class="card">
+    <h3>Total Items</h3>
+    <div class="number" id="totalItems">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Good Stock</h3>
+    <div class="number" id="goodStock">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Low Stock</h3>
+    <div class="number" id="lowStock">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Critical</h3>
+    <div class="number" id="criticalStock">0</div>
+  </div>
+</div>
+
+<div class="inventory-grid" id="inventoryList"></div>
+
+<script>
+let inventory = [
+  { name: "Burger Bun", stock: 100, min: 20, unit: "pcs" },
+  { name: "Burger Patty", stock: 80, min: 20, unit: "pcs" },
+  { name: "Cheese Slice", stock: 18, min: 20, unit: "pcs" },
+  { name: "Pizza Base", stock: 45, min: 15, unit: "pcs" },
+  { name: "Pizza Cheese", stock: 8, min: 10, unit: "kg" },
+  { name: "Coffee Powder", stock: 12, min: 5, unit: "kg" },
+  { name: "Milk", stock: 4, min: 5, unit: "litres" },
+  { name: "Tomato", stock: 3, min: 10, unit: "kg" }
+];
+
+function getStatus(item) {
+  if (item.stock <= item.min / 2) {
+    return "critical";
+  }
+
+  if (item.stock <= item.min) {
+    return "low";
+  }
+
+  return "good";
+}
+
+function getStatusText(item) {
+  const status = getStatus(item);
+
+  if (status === "critical") return "🔴 Critical";
+  if (status === "low") return "🟠 Low Stock";
+  return "🟢 Good";
+}
+
+function renderInventory() {
+  const inventoryList = document.getElementById("inventoryList");
+
+  let html = "";
+
+  let good = 0;
+  let low = 0;
+  let critical = 0;
+
+  inventory.forEach((item, index) => {
+    const status = getStatus(item);
+
+    if (status === "good") good++;
+    if (status === "low") low++;
+    if (status === "critical") critical++;
+
+    html += `
+      <div class="item ${status}">
+        <div>
+          <h3>${item.name}</h3>
+          <p>Status: <b>${getStatusText(item)}</b></p>
+        </div>
+
+        <div>
+          <b>Stock</b>
+          <p>${item.stock} ${item.unit}</p>
+        </div>
+
+        <div>
+          <b>Minimum</b>
+          <p>${item.min} ${item.unit}</p>
+        </div>
+
+        <div>
+          <button class="add" onclick="addStock(${index})">+ Add</button>
+          <button class="remove" onclick="removeStock(${index})">− Use</button>
+        </div>
+      </div>
+    `;
+  });
+
+  inventoryList.innerHTML = html;
+
+  document.getElementById("totalItems").innerText = inventory.length;
+  document.getElementById("goodStock").innerText = good;
+  document.getElementById("lowStock").innerText = low;
+  document.getElementById("criticalStock").innerText = critical;
+}
+
+function addStock(index) {
+  inventory[index].stock += 5;
+  renderInventory();
+}
+
+function removeStock(index) {
+  if (inventory[index].stock > 0) {
+    inventory[index].stock -= 1;
+  }
+
+  renderInventory();
+}
+
+window.addStock = addStock;
+window.removeStock = removeStock;
+
+renderInventory();
+</script>
+
+</body>
+</html>

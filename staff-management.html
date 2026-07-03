@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Staff Management</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.form-box, .staff-list {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  margin-bottom: 25px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.add { background: green; color: white; }
+.toggle { background: orange; color: #111; }
+.delete { background: red; color: white; }
+
+.staff-card {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>👥 KRUTZ Staff Management</h1>
+  <p>Manage employees, roles, shifts and salary details</p>
+</div>
+
+<div class="form-box">
+  <h2>Add Staff Member</h2>
+
+  <input id="staffName" placeholder="Staff Name">
+  <input id="staffPhone" placeholder="Phone Number">
+  <input id="staffSalary" type="number" placeholder="Monthly Salary">
+
+  <select id="staffRole">
+    <option>Kitchen</option>
+    <option>Waiter</option>
+    <option>Cashier</option>
+    <option>Manager</option>
+    <option>Owner</option>
+  </select>
+
+  <select id="staffShift">
+    <option>Morning</option>
+    <option>Afternoon</option>
+    <option>Evening</option>
+    <option>Night</option>
+    <option>Full Day</option>
+  </select>
+
+  <button class="add" onclick="addStaff()">Add Staff</button>
+</div>
+
+<div class="staff-list">
+  <h2>Live Staff List</h2>
+  <div id="staffList">Loading...</div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const staffList = document.getElementById("staffList");
+
+window.addStaff = async function() {
+  const name = document.getElementById("staffName").value.trim();
+  const phone = document.getElementById("staffPhone").value.trim();
+  const salary = Number(document.getElementById("staffSalary").value);
+  const role = document.getElementById("staffRole").value;
+  const shift = document.getElementById("staffShift").value;
+
+  if (!name || !phone || !salary) {
+    alert("Please fill name, phone and salary.");
+    return;
+  }
+
+  await addDoc(collection(db, "staff"), {
+    name,
+    phone,
+    salary,
+    role,
+    shift,
+    active: true
+  });
+
+  document.getElementById("staffName").value = "";
+  document.getElementById("staffPhone").value = "";
+  document.getElementById("staffSalary").value = "";
+};
+
+onSnapshot(collection(db, "staff"), function(snapshot) {
+  let html = "";
+
+  snapshot.forEach(function(staffDoc) {
+    const id = staffDoc.id;
+    const staff = staffDoc.data();
+
+    html += `
+      <div class="staff-card">
+        <h3>${staff.name}</h3>
+        <p><b>Phone:</b> ${staff.phone}</p>
+        <p><b>Role:</b> ${staff.role}</p>
+        <p><b>Shift:</b> ${staff.shift}</p>
+        <p><b>Salary:</b> ₹${staff.salary}</p>
+        <p><b>Status:</b> ${staff.active ? "Active" : "Inactive"}</p>
+
+        <button class="toggle" onclick="toggleStaff('${id}', ${staff.active})">
+          ${staff.active ? "Mark Inactive" : "Mark Active"}
+        </button>
+
+        <button class="delete" onclick="deleteStaff('${id}')">Delete</button>
+      </div>
+    `;
+  });
+
+  staffList.innerHTML = html || "No staff added yet.";
+});
+
+window.toggleStaff = async function(id, current) {
+  await updateDoc(doc(db, "staff", id), {
+    active: !current
+  });
+};
+
+window.deleteStaff = async function(id) {
+  await deleteDoc(doc(db, "staff", id));
+};
+</script>
+
+</body>
+</html>

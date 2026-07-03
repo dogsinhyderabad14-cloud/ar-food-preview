@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRUTZ Track Order</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #fff2df;
+      margin: 0;
+      padding: 25px;
+    }
+
+    .box {
+      background: white;
+      padding: 30px;
+      border-radius: 22px;
+      max-width: 650px;
+      margin: 30px auto;
+      box-shadow: 0 8px 25px rgba(0,0,0,.18);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #666;
+      margin-bottom: 25px;
+    }
+
+    .status {
+      font-size: 30px;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+      margin: 20px 0;
+      background: #fff7ec;
+      padding: 18px;
+      border-radius: 18px;
+    }
+
+    .timeline {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin: 25px 0;
+    }
+
+    .step {
+      background: #eee;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .step.active {
+      background: #ff9800;
+      color: white;
+    }
+
+    .details {
+      text-align: left;
+      background: #fff7ec;
+      padding: 18px;
+      border-radius: 18px;
+      margin-top: 18px;
+    }
+
+    .details p {
+      margin: 10px 0;
+    }
+
+    button {
+      background: green;
+      color: white;
+      border: none;
+      padding: 14px 25px;
+      border-radius: 25px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      width: 100%;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .timeline {
+        grid-template-columns: 1fr;
+      }
+
+      .box {
+        padding: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <h1>🍽️ Track Your Order</h1>
+    <p class="subtitle">Live updates from KRUTZ Restaurant OS</p>
+
+    <div class="status" id="orderStatus">Loading...</div>
+
+    <div class="timeline">
+      <div class="step" id="stepPending">Pending</div>
+      <div class="step" id="stepPreparing">Preparing</div>
+      <div class="step" id="stepReady">Ready</div>
+      <div class="step" id="stepDelivered">Served</div>
+      <div class="step" id="stepPaid">Paid</div>
+    </div>
+
+    <div class="details">
+      <h3>📦 Order Details</h3>
+      <p><b>Order ID:</b> <span id="orderId">Loading...</span></p>
+      <p><b>Order Type:</b> <span id="orderType">Loading...</span></p>
+      <p><b>Reservation:</b> <span id="reservationStatus">Loading...</span></p>
+      <p><b>Table:</b> <span id="tableNumber">Loading...</span></p>
+      <p><b>Guests:</b> <span id="guests">-</span></p>
+      <p><b>Arrival:</b> <span id="arrivalInfo">-</span></p>
+      <p><b>Kitchen Start:</b> <span id="kitchenStartTime">-</span></p>
+    </div>
+
+    <div class="details">
+      <h3>🍔 Items</h3>
+      <p><b>Burger:</b> <span id="burgerQty">0</span></p>
+      <p><b>Pizza:</b> <span id="pizzaQty">0</span></p>
+      <p><b>Coffee:</b> <span id="coffeeQty">0</span></p>
+      <p><b>Total:</b> ₹<span id="totalAmount">0</span></p>
+    </div>
+
+    <div class="details">
+      <h3>💳 Payment</h3>
+      <p><b>Status:</b> <span id="paymentStatus">Loading...</span></p>
+      <p><b>Method:</b> <span id="paymentMethod">Loading...</span></p>
+    </div>
+
+    <div class="details">
+      <h3>📝 Notes</h3>
+      <p><b>Occasion:</b> <span id="occasion">-</span></p>
+      <p><b>Instructions:</b> <span id="specialInstructions">-</span></p>
+    </div>
+
+    <button onclick="window.location.href='index.html'">Back to Menu</button>
+  </div>
+
+  <script type="module">
+    import { db } from "./firebase.js";
+
+    import {
+      doc,
+      onSnapshot
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const orderId = params.get("id");
+
+    function clearTimeline() {
+      document.querySelectorAll(".step").forEach(step => {
+        step.classList.remove("active");
+      });
+    }
+
+    function updateTimeline(status, paymentStatus) {
+      clearTimeline();
+
+      if (status === "Pending") {
+        document.getElementById("stepPending").classList.add("active");
+      }
+
+      if (status === "Preparing") {
+        document.getElementById("stepPending").classList.add("active");
+        document.getElementById("stepPreparing").classList.add("active");
+      }
+
+      if (status === "Ready") {
+        document.getElementById("stepPending").classList.add("active");
+        document.getElementById("stepPreparing").classList.add("active");
+        document.getElementById("stepReady").classList.add("active");
+      }
+
+      if (status === "Delivered") {
+        document.getElementById("stepPending").classList.add("active");
+        document.getElementById("stepPreparing").classList.add("active");
+        document.getElementById("stepReady").classList.add("active");
+        document.getElementById("stepDelivered").classList.add("active");
+      }
+
+      if (paymentStatus === "Paid") {
+        document.getElementById("stepPending").classList.add("active");
+        document.getElementById("stepPreparing").classList.add("active");
+        document.getElementById("stepReady").classList.add("active");
+        document.getElementById("stepDelivered").classList.add("active");
+        document.getElementById("stepPaid").classList.add("active");
+      }
+    }
+
+    if (!orderId) {
+      document.getElementById("orderStatus").innerText = "No order ID found";
+    } else {
+      document.getElementById("orderId").innerText = orderId;
+
+      const orderRef = doc(db, "orders", orderId);
+
+      onSnapshot(orderRef, function(docSnap) {
+        if (docSnap.exists()) {
+          const order = docSnap.data();
+          const items = order.items || {};
+
+          const status = order.status || "Pending";
+          const paymentStatus = order.paymentStatus || "Unpaid";
+
+          document.getElementById("orderStatus").innerText = status;
+          document.getElementById("orderType").innerText = order.orderType || "Order Now";
+          document.getElementById("reservationStatus").innerText = order.reservationStatus || "Walk-in";
+          document.getElementById("tableNumber").innerText = order.tableNumber || "No table";
+          document.getElementById("guests").innerText = order.guests || "-";
+
+          if (order.arrivalDate || order.arrivalTime) {
+            document.getElementById("arrivalInfo").innerText =
+              (order.arrivalDate || "") + " " + (order.arrivalTime || "");
+          } else {
+            document.getElementById("arrivalInfo").innerText = "-";
+          }
+
+          document.getElementById("kitchenStartTime").innerText =
+            order.kitchenStartTime || "-";
+
+          document.getElementById("burgerQty").innerText = items.burger || 0;
+          document.getElementById("pizzaQty").innerText = items.pizza || 0;
+          document.getElementById("coffeeQty").innerText = items.coffee || 0;
+          document.getElementById("totalAmount").innerText = order.totalAmount || 0;
+
+          document.getElementById("paymentStatus").innerText = paymentStatus;
+          document.getElementById("paymentMethod").innerText = order.paymentMethod || "Not selected";
+
+          document.getElementById("occasion").innerText = order.occasion || "-";
+          document.getElementById("specialInstructions").innerText =
+            order.specialInstructions || "-";
+
+          updateTimeline(status, paymentStatus);
+
+        } else {
+          document.getElementById("orderStatus").innerText = "Order not found";
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>

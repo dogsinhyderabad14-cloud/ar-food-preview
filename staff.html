@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRUTZ Restaurant OS</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      color: #111;
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      width: 260px;
+      background: #111;
+      color: white;
+      padding: 25px 18px;
+    }
+
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      color: #ff9800;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .nav button {
+      width: 100%;
+      background: transparent;
+      color: white;
+      border: none;
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: #ff9800;
+      color: #111;
+      font-weight: bold;
+    }
+
+    .main {
+      flex: 1;
+      padding: 25px;
+    }
+
+    .topbar {
+      background: white;
+      padding: 18px 25px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      margin-bottom: 25px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .card, .placeholder, .order-card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    .number {
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .page {
+      display: none;
+    }
+
+    .page.active {
+      display: block;
+    }
+
+    .orders-board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .order-column {
+      background: #fff7ec;
+      padding: 15px;
+      border-radius: 18px;
+      min-height: 500px;
+    }
+
+    .order-column h3 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    .order-card {
+      margin-bottom: 15px;
+    }
+
+    .order-card button {
+      margin: 5px 3px;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 18px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-preparing { background: orange; }
+    .btn-ready { background: lightgreen; }
+    .btn-delivered { background: #111; color: white; }
+
+    .floor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .table-card {
+      background: white;
+      padding: 20px;
+      border-radius: 18px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      cursor: pointer;
+    }
+
+    @media (max-width: 900px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: auto;
+      }
+
+      .orders-board {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="logo">KRUTZ OS</div>
+    <div class="nav" id="navMenu"></div>
+  </aside>
+
+  <main class="main">
+
+    <div class="topbar">
+      <h2 id="pageTitle">Dashboard</h2>
+      <strong id="roleText">Role: Loading...</strong>
+    </div>
+
+    <section id="dashboard" class="page active">
+      <div class="cards">
+
+        <div class="card">
+          <h3>Total Orders</h3>
+          <div class="number" id="totalOrders">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Pending Orders</h3>
+          <div class="number" id="pendingOrders">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Preparing</h3>
+          <div class="number" id="preparingOrders">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Ready</h3>
+          <div class="number" id="readyOrders">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Delivered</h3>
+          <div class="number" id="deliveredOrders">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Total Revenue</h3>
+          <div class="number">₹<span id="totalRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Cash Revenue</h3>
+          <div class="number">₹<span id="cashRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>UPI Revenue</h3>
+          <div class="number">₹<span id="upiRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Card Revenue</h3>
+          <div class="number">₹<span id="cardRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Paid Orders</h3>
+          <div class="number" id="paidOrdersCount">0</div>
+        </div>
+
+        <div class="card">
+          <h3>Unpaid Orders</h3>
+          <div class="number" id="unpaidOrdersCount">0</div>
+        </div>
+
+      </div>
+    </section>
+
+    <section id="orders" class="page">
+      <h2>📦 Live Orders Board</h2>
+
+      <div class="orders-board">
+        <div class="order-column">
+          <h3>🟡 Pending</h3>
+          <div id="pendingColumn">Loading...</div>
+        </div>
+
+        <div class="order-column">
+          <h3>🟠 Preparing</h3>
+          <div id="preparingColumn">Loading...</div>
+        </div>
+
+        <div class="order-column">
+          <h3>🟢 Ready</h3>
+          <div id="readyColumn">Loading...</div>
+        </div>
+
+        <div class="order-column">
+          <h3>✅ Delivered</h3>
+          <div id="deliveredColumn">Loading...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="kitchen" class="page">
+      <div class="placeholder">👨‍🍳 Kitchen Display System is available in kitchen.html</div>
+    </section>
+
+    <section id="cashier" class="page">
+      <h2>🧾 Cashier Billing</h2>
+
+      <div class="orders-board">
+        <div class="order-column">
+          <h3>💰 Unpaid Orders</h3>
+          <div id="unpaidOrders">Loading...</div>
+        </div>
+
+        <div class="order-column">
+          <h3>✅ Paid Orders</h3>
+          <div id="paidOrders">Loading...</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="manager" class="page">
+      <h2>🍽️ Live Restaurant Floor</h2>
+
+      <div class="floor-grid">
+        <div class="table-card" id="table1">
+          <h3>Table 1</h3>
+          <p>Status: Loading...</p>
+        </div>
+
+        <div class="table-card" id="table2">
+          <h3>Table 2</h3>
+          <p>Status: Loading...</p>
+        </div>
+
+        <div class="table-card" id="table3">
+          <h3>Table 3</h3>
+          <p>Status: Loading...</p>
+        </div>
+
+        <div class="table-card" id="table4">
+          <h3>Table 4</h3>
+          <p>Status: Loading...</p>
+        </div>
+
+        <div class="table-card" id="table5">
+          <h3>Table 5</h3>
+          <p>Status: Loading...</p>
+        </div>
+
+        <div class="table-card" id="table6">
+          <h3>Table 6</h3>
+          <p>Status: Loading...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="owner" class="page">
+      <div class="placeholder">👑 Owner business dashboard will come here.</div>
+    </section>
+
+    <section id="analytics" class="page">
+      <h2>📊 Premium Owner Analytics</h2>
+
+      <div class="cards">
+        <div class="card">
+          <h3>Today's Revenue</h3>
+          <div class="number">₹<span id="todayRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>This Week Revenue</h3>
+          <div class="number">₹<span id="weekRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>This Month Revenue</h3>
+          <div class="number">₹<span id="monthRevenue">0</span></div>
+        </div>
+
+        <div class="card">
+          <h3>Average Order</h3>
+          <div class="number">₹<span id="averageOrderValue">0</span></div>
+        </div>
+      </div>
+
+      <div class="cards" style="margin-top:25px;">
+        <div class="card">
+          <h3>💳 Payment Breakdown</h3>
+          <p>Cash: ₹<span id="analyticsCash">0</span></p>
+          <p>UPI: ₹<span id="analyticsUPI">0</span></p>
+          <p>Card: ₹<span id="analyticsCard">0</span></p>
+        </div>
+
+        <div class="card">
+          <h3>🍔 Best Sellers</h3>
+          <p>Burger Sold: <b id="burgerSold">0</b></p>
+          <p>Pizza Sold: <b id="pizzaSold">0</b></p>
+          <p>Coffee Sold: <b id="coffeeSold">0</b></p>
+        </div>
+
+        <div class="card">
+          <h3>🤖 AI Restaurant Copilot</h3>
+          <p id="aiInsight1">Analyzing restaurant data...</p>
+          <p id="aiInsight2">Waiting for more orders...</p>
+          <p id="aiInsight3">Payment insights loading...</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="menu" class="page">
+      <div class="placeholder">🍔 Menu management will come here.</div>
+    </section>
+
+    <section id="employees" class="page">
+      <div class="placeholder">👥 Employee management will come here.</div>
+    </section>
+
+    <section id="settings" class="page">
+      <div class="placeholder">⚙️ Restaurant settings will come here.</div>
+    </section>
+
+  </main>
+
+</div>
+<script type="module">
+  import { db } from "./firebase.js";
+
+  import {
+    collection,
+    onSnapshot,
+    query,
+    orderBy,
+    doc,
+    updateDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const role = localStorage.getItem("role");
+
+  if (!role) {
+    window.location.href = "login.html";
+  }
+
+  const permissions = {
+    kitchen: [
+      { id: "dashboard", label: "🏠 Dashboard" },
+      { id: "kitchen", label: "👨‍🍳 Kitchen" }
+    ],
+
+    cashier: [
+      { id: "dashboard", label: "🏠 Dashboard" },
+      { id: "orders", label: "📦 Orders" },
+      { id: "cashier", label: "🧾 Cashier" }
+    ],
+
+    manager: [
+      { id: "dashboard", label: "🏠 Dashboard" },
+      { id: "orders", label: "📦 Orders" },
+      { id: "kitchen", label: "👨‍🍳 Kitchen" },
+      { id: "cashier", label: "🧾 Cashier" },
+      { id: "manager", label: "👨‍💼 Manager" }
+    ],
+
+    owner: [
+      { id: "dashboard", label: "🏠 Dashboard" },
+      { id: "orders", label: "📦 Orders" },
+      { id: "kitchen", label: "👨‍🍳 Kitchen" },
+      { id: "cashier", label: "🧾 Cashier" },
+      { id: "manager", label: "👨‍💼 Manager" },
+      { id: "owner", label: "👑 Owner" },
+      { id: "analytics", label: "📊 Analytics" },
+      { id: "menu", label: "🍔 Menu" },
+      { id: "employees", label: "👥 Employees" },
+      { id: "settings", label: "⚙️ Settings" }
+    ]
+  };
+
+  const navMenu = document.getElementById("navMenu");
+  const allowedPages = permissions[role] || [];
+
+  document.getElementById("roleText").innerText =
+    "Role: " + role.toUpperCase();
+
+  allowedPages.forEach((page, index) => {
+    const btn = document.createElement("button");
+    btn.innerText = page.label;
+
+    btn.onclick = function () {
+      showPage(page.id, btn);
+    };
+
+    if (index === 0) {
+      btn.classList.add("active");
+    }
+
+    navMenu.appendChild(btn);
+  });
+
+  const logoutBtn = document.createElement("button");
+  logoutBtn.innerText = "🚪 Logout";
+  logoutBtn.onclick = function () {
+    localStorage.removeItem("role");
+    window.location.href = "login.html";
+  };
+  navMenu.appendChild(logoutBtn);
+
+  window.showPage = function(pageId, button) {
+    const isAllowed = allowedPages.some(page => page.id === pageId);
+
+    if (!isAllowed) {
+      alert("You do not have permission to access this page.");
+      return;
+    }
+
+    document.querySelectorAll(".page").forEach(page => {
+      page.classList.remove("active");
+    });
+
+    document.getElementById(pageId).classList.add("active");
+
+    document.querySelectorAll(".nav button").forEach(btn => {
+      btn.classList.remove("active");
+    });
+
+    button.classList.add("active");
+
+    document.getElementById("pageTitle").innerText =
+      button.innerText.replace(/^[^\w]+/, "");
+  };
+
+  function createOrderCard(id, order) {
+    const items = order.items || {};
+
+    return `
+      <div class="order-card">
+        <h3>Table ${order.tableNumber || "No table"}</h3>
+
+        <p><b>Burger:</b> ${items.burger || 0}</p>
+        <p><b>Pizza:</b> ${items.pizza || 0}</p>
+        <p><b>Coffee:</b> ${items.coffee || 0}</p>
+
+        <p><b>Total:</b> ₹${order.totalAmount || 0}</p>
+        <p><b>Status:</b> ${order.status || "Pending"}</p>
+        <p><b>Payment:</b> ${order.paymentStatus || "Unpaid"}</p>
+
+        <button class="btn-preparing" onclick="updateOrderStatus('${id}', 'Preparing')">Preparing</button>
+        <button class="btn-ready" onclick="updateOrderStatus('${id}', 'Ready')">Ready</button>
+        <button class="btn-delivered" onclick="updateOrderStatus('${id}', 'Delivered')">Delivered</button>
+      </div>
+    `;
+  }
+
+  function createCashierCard(id, order) {
+    const items = order.items || {};
+
+    return `
+      <div class="order-card">
+        <h3>Table ${order.tableNumber || "No table"}</h3>
+
+        <p><b>Burger:</b> ${items.burger || 0}</p>
+        <p><b>Pizza:</b> ${items.pizza || 0}</p>
+        <p><b>Coffee:</b> ${items.coffee || 0}</p>
+
+        <p><b>Total:</b> ₹${order.totalAmount || 0}</p>
+        <p><b>Payment:</b> ${order.paymentStatus || "Unpaid"}</p>
+        <p><b>Method:</b> ${order.paymentMethod || "Not selected"}</p>
+
+        <button onclick="markPaid('${id}', 'Cash')">Cash</button>
+        <button onclick="markPaid('${id}', 'UPI')">UPI</button>
+        <button onclick="markPaid('${id}', 'Card')">Card</button>
+      </div>
+    `;
+  }
+
+  function updateFloorTables(snapshot) {
+    const tableStatuses = {
+      1: "⚪ Available",
+      2: "⚪ Available",
+      3: "⚪ Available",
+      4: "⚪ Available",
+      5: "⚪ Available",
+      6: "⚪ Available"
+    };
+
+    snapshot.forEach(function(orderDoc) {
+      const order = orderDoc.data();
+      const table = Number(order.tableNumber);
+      const status = order.status || "Pending";
+      const paymentStatus = order.paymentStatus || "Unpaid";
+
+      if (!tableStatuses[table]) return;
+
+      if (paymentStatus === "Paid") {
+        tableStatuses[table] = "✅ Paid / Completed";
+      } else if (status === "Pending") {
+        tableStatuses[table] = "🔴 Waiting";
+      } else if (status === "Preparing") {
+        tableStatuses[table] = "🟡 Preparing";
+      } else if (status === "Ready") {
+        tableStatuses[table] = "🟢 Food Ready";
+      } else if (status === "Delivered") {
+        tableStatuses[table] = "💳 Waiting Payment";
+      }
+    });
+
+    for (let i = 1; i <= 6; i++) {
+      const tableCard = document.getElementById("table" + i);
+
+      if (tableCard) {
+        tableCard.innerHTML = `
+          <h3>Table ${i}</h3>
+          <p><b>Status:</b> ${tableStatuses[i]}</p>
+        `;
+      }
+    }
+  }
+
+  window.markPaid = async function(id, method) {
+    const orderRef = doc(db, "orders", id);
+
+    await updateDoc(orderRef, {
+      paymentStatus: "Paid",
+      paymentMethod: method,
+      status: "Delivered"
+    });
+  };
+
+  window.updateOrderStatus = async function(id, status) {
+    const orderRef = doc(db, "orders", id);
+
+    await updateDoc(orderRef, {
+      status: status
+    });
+  };
+
+  const q = query(
+    collection(db, "orders"),
+    orderBy("createdAt", "desc")
+  );
+
+  onSnapshot(q, function(snapshot) {
+    let total = 0;
+    let pending = 0;
+    let preparing = 0;
+    let ready = 0;
+    let delivered = 0;
+
+    let revenue = 0;
+    let cashRevenue = 0;
+    let upiRevenue = 0;
+    let cardRevenue = 0;
+
+    let todayRevenue = 0;
+    let weekRevenue = 0;
+    let monthRevenue = 0;
+
+    let paidOrdersCount = 0;
+    let unpaidOrdersCount = 0;
+
+    let burgerSold = 0;
+    let pizzaSold = 0;
+    let coffeeSold = 0;
+
+    let pendingHTML = "";
+    let preparingHTML = "";
+    let readyHTML = "";
+    let deliveredHTML = "";
+    let unpaidHTML = "";
+    let paidHTML = "";
+
+    const now = new Date();
+
+    snapshot.forEach(function(orderDoc) {
+      const id = orderDoc.id;
+      const order = orderDoc.data();
+      const status = order.status || "Pending";
+      const paymentStatus = order.paymentStatus || "Unpaid";
+      const amount = Number(order.totalAmount || 0);
+      const items = order.items || {};
+
+      total++;
+
+      if (paymentStatus === "Paid") {
+        paidOrdersCount++;
+        revenue += amount;
+
+        burgerSold += Number(items.burger || 0);
+        pizzaSold += Number(items.pizza || 0);
+        coffeeSold += Number(items.coffee || 0);
+
+        if (order.paymentMethod === "Cash") {
+          cashRevenue += amount;
+        } else if (order.paymentMethod === "UPI") {
+          upiRevenue += amount;
+        } else if (order.paymentMethod === "Card") {
+          cardRevenue += amount;
+        }
+
+        if (order.createdAt) {
+          const orderDate = order.createdAt.toDate();
+
+          if (orderDate.toDateString() === now.toDateString()) {
+            todayRevenue += amount;
+          }
+
+          const diffDays = (now - orderDate) / (1000 * 60 * 60 * 24);
+
+          if (diffDays <= 7) {
+            weekRevenue += amount;
+          }
+
+          if (
+            orderDate.getMonth() === now.getMonth() &&
+            orderDate.getFullYear() === now.getFullYear()
+          ) {
+            monthRevenue += amount;
+          }
+        }
+
+      } else {
+        unpaidOrdersCount++;
+      }
+
+      const card = createOrderCard(id, order);
+      const cashierCard = createCashierCard(id, order);
+
+      if (paymentStatus === "Paid") {
+        paidHTML += cashierCard;
+      } else {
+        unpaidHTML += cashierCard;
+      }
+
+      if (status === "Preparing") {
+        preparing++;
+        preparingHTML += card;
+      } else if (status === "Ready") {
+        ready++;
+        readyHTML += card;
+      } else if (status === "Delivered") {
+        delivered++;
+        deliveredHTML += card;
+      } else {
+        pending++;
+        pendingHTML += card;
+      }
+    });
+
+    document.getElementById("totalOrders").innerText = total;
+    document.getElementById("pendingOrders").innerText = pending;
+    document.getElementById("preparingOrders").innerText = preparing;
+    document.getElementById("readyOrders").innerText = ready;
+    document.getElementById("deliveredOrders").innerText = delivered;
+
+    document.getElementById("totalRevenue").innerText = revenue;
+    document.getElementById("cashRevenue").innerText = cashRevenue;
+    document.getElementById("upiRevenue").innerText = upiRevenue;
+    document.getElementById("cardRevenue").innerText = cardRevenue;
+
+    document.getElementById("paidOrdersCount").innerText = paidOrdersCount;
+    document.getElementById("unpaidOrdersCount").innerText = unpaidOrdersCount;
+
+    document.getElementById("todayRevenue").innerText = todayRevenue;
+    document.getElementById("weekRevenue").innerText = weekRevenue;
+    document.getElementById("monthRevenue").innerText = monthRevenue;
+
+    const avgOrder = paidOrdersCount > 0 ? Math.round(revenue / paidOrdersCount) : 0;
+    document.getElementById("averageOrderValue").innerText = avgOrder;
+
+    document.getElementById("analyticsCash").innerText = cashRevenue;
+    document.getElementById("analyticsUPI").innerText = upiRevenue;
+    document.getElementById("analyticsCard").innerText = cardRevenue;
+
+    document.getElementById("burgerSold").innerText = burgerSold;
+    document.getElementById("pizzaSold").innerText = pizzaSold;
+    document.getElementById("coffeeSold").innerText = coffeeSold;
+
+    document.getElementById("aiInsight1").innerText =
+      "Today's paid revenue is ₹" + todayRevenue + ".";
+
+    document.getElementById("aiInsight2").innerText =
+      "Best selling item: " +
+      (burgerSold >= pizzaSold && burgerSold >= coffeeSold
+        ? "Burger"
+        : pizzaSold >= coffeeSold
+        ? "Pizza"
+        : "Coffee");
+
+    document.getElementById("aiInsight3").innerText =
+      "Most used payment method: " +
+      (cashRevenue >= upiRevenue && cashRevenue >= cardRevenue
+        ? "Cash"
+        : upiRevenue >= cardRevenue
+        ? "UPI"
+        : "Card");
+
+    document.getElementById("pendingColumn").innerHTML =
+      pendingHTML || "No pending orders";
+
+    document.getElementById("preparingColumn").innerHTML =
+      preparingHTML || "No preparing orders";
+
+    document.getElementById("readyColumn").innerHTML =
+      readyHTML || "No ready orders";
+
+    document.getElementById("deliveredColumn").innerHTML =
+      deliveredHTML || "No delivered orders";
+
+    document.getElementById("unpaidOrders").innerHTML =
+      unpaidHTML || "No unpaid orders";
+
+    document.getElementById("paidOrders").innerHTML =
+      paidHTML || "No paid orders";
+
+    updateFloorTables(snapshot);
+  });
+</script>
+
+</body>
+</html>

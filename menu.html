@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>KRUTZ Menu Management</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f4f4;
+  color: #111;
+  padding: 25px;
+}
+
+.header {
+  background: #111;
+  color: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.header h1 {
+  color: #ff9800;
+  margin: 0;
+}
+
+.form-box, .menu-list {
+  background: white;
+  padding: 20px;
+  border-radius: 18px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  margin-bottom: 25px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  margin: 8px 0;
+  border-radius: 10px;
+  border: 1px solid #aaa;
+  box-sizing: border-box;
+}
+
+button {
+  border: none;
+  padding: 10px 14px;
+  margin: 5px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.add { background: green; color: white; }
+.delete { background: red; color: white; }
+.toggle { background: orange; color: #111; }
+
+.item-card {
+  background: #fff7ec;
+  padding: 15px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>🍔 KRUTZ Menu Management</h1>
+  <p>Add, update, and control restaurant menu items</p>
+</div>
+
+<div class="form-box">
+  <h2>Add New Item</h2>
+
+  <input id="itemName" placeholder="Item Name">
+  <input id="itemPrice" type="number" placeholder="Price">
+  <input id="prepTime" type="number" placeholder="Preparation Time (minutes)">
+  <input id="modelFile" placeholder="3D Model File Name e.g. burger.glb">
+
+  <select id="category">
+    <option>Burger</option>
+    <option>Pizza</option>
+    <option>Coffee</option>
+    <option>Biryani</option>
+    <option>Starter</option>
+    <option>Dessert</option>
+    <option>Drinks</option>
+  </select>
+
+  <select id="tag">
+    <option>Normal</option>
+    <option>Best Seller</option>
+    <option>Chef Special</option>
+    <option>New Arrival</option>
+  </select>
+
+  <button class="add" onclick="addItem()">Add Item</button>
+</div>
+
+<div class="menu-list">
+  <h2>Live Menu Items</h2>
+  <div id="menuItems">Loading...</div>
+</div>
+
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  addDoc,
+  onSnapshot,
+  doc,
+  updateDoc,
+  deleteDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const menuItems = document.getElementById("menuItems");
+
+window.addItem = async function() {
+  const name = document.getElementById("itemName").value.trim();
+  const price = Number(document.getElementById("itemPrice").value);
+  const prepTime = Number(document.getElementById("prepTime").value);
+  const modelFile = document.getElementById("modelFile").value.trim();
+  const category = document.getElementById("category").value;
+  const tag = document.getElementById("tag").value;
+
+  if (!name || !price || !prepTime) {
+    alert("Please fill item name, price, and prep time.");
+    return;
+  }
+
+  await addDoc(collection(db, "menu"), {
+    name,
+    price,
+    prepTime,
+    modelFile,
+    category,
+    tag,
+    available: true
+  });
+
+  document.getElementById("itemName").value = "";
+  document.getElementById("itemPrice").value = "";
+  document.getElementById("prepTime").value = "";
+  document.getElementById("modelFile").value = "";
+};
+
+onSnapshot(collection(db, "menu"), function(snapshot) {
+  let html = "";
+
+  snapshot.forEach(function(menuDoc) {
+    const id = menuDoc.id;
+    const item = menuDoc.data();
+
+    html += `
+      <div class="item-card">
+        <h3>${item.name}</h3>
+        <p><b>Price:</b> ₹${item.price}</p>
+        <p><b>Category:</b> ${item.category}</p>
+        <p><b>Prep Time:</b> ${item.prepTime} mins</p>
+        <p><b>3D Model:</b> ${item.modelFile || "-"}</p>
+        <p><b>Tag:</b> ${item.tag || "Normal"}</p>
+        <p><b>Status:</b> ${item.available ? "Available" : "Unavailable"}</p>
+
+        <button class="toggle" onclick="toggleAvailable('${id}', ${item.available})">
+          ${item.available ? "Mark Unavailable" : "Mark Available"}
+        </button>
+
+        <button class="delete" onclick="deleteItem('${id}')">Delete</button>
+      </div>
+    `;
+  });
+
+  menuItems.innerHTML = html || "No menu items added yet.";
+});
+
+window.toggleAvailable = async function(id, current) {
+  await updateDoc(doc(db, "menu", id), {
+    available: !current
+  });
+};
+
+window.deleteItem = async function(id) {
+  await deleteDoc(doc(db, "menu", id));
+};
+</script>
+
+</body>
+</html>
