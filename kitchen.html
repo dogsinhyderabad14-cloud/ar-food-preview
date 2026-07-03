@@ -175,7 +175,6 @@ button {
 }
 </style>
 </head>
-
 <body>
 
 <h1>👨‍🍳 KRUTZ Kitchen Display System</h1>
@@ -194,6 +193,7 @@ button {
 </div>
 
 <div class="board">
+
   <div class="column">
     <h2>🔴 Pending <span id="pendingCount">0</span></h2>
     <div id="pendingOrders"></div>
@@ -213,6 +213,7 @@ button {
     <h2>✅ Delivered <span id="deliveredCount">0</span></h2>
     <div id="deliveredOrders"></div>
   </div>
+
 </div>
 <script type="module">
 import { db } from "./firebase.js";
@@ -231,375 +232,223 @@ const preparingOrders = document.getElementById("preparingOrders");
 const readyOrders = document.getElementById("readyOrders");
 const deliveredOrders = document.getElementById("deliveredOrders");
 const scheduledOrders = document.getElementById("scheduledOrders");
-
 const alarmSound = document.getElementById("alarmSound");
 
 let alarmEnabled = false;
-
 let firstLoad = true;
-
 let knownOrders = new Set();
-
-let waitingOrders = new Set();
-
 let latestOrders = [];
 
-window.enableAlarm = function(){
+window.enableAlarm = function () {
+  alarmEnabled = true;
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch(() => {});
+  alert("Kitchen Alarm Enabled");
+};
 
-    alarmEnabled = true;
-
-    alarmSound.loop = false;
-    alarmSound.currentTime = 0;
-    alarmSound.play();
-
-    setTimeout(function(){
-        alarmSound.pause();
-        alarmSound.currentTime = 0;
-    }, 700);
-
-    alert("Kitchen Alarm Enabled");
-
+function playAlarm() {
+  if (!alarmEnabled) return;
+  alarmSound.currentTime = 0;
+  alarmSound.play().catch(() => {});
 }
 
-function playAlarm(){
+function getKitchenStart(order) {
+  if (order.arrivalDate && order.arrivalTime) {
+    const arrival = new Date(order.arrivalDate + "T" + order.arrivalTime);
 
-    if(!alarmEnabled) return;
-
-    alarmSound.loop = true;
-
-    alarmSound.currentTime = 0;
-
-    alarmSound.play();
-
-}
-
-function stopAlarm(){
-
-    alarmSound.pause();
-
-    alarmSound.currentTime = 0;
-
-    alarmSound.loop = false;
-
-}
-
-function getKitchenStart(order){
-
-    if(order.arrivalDate && order.arrivalTime){
-
-        const arrival = new Date(order.arrivalDate+"T"+order.arrivalTime);
-
-        let prep = 0;
-
-        const items = order.items || {};
-
-        if(items.burger>0) prep = Math.max(prep,15);
-
-        if(items.pizza>0) prep = Math.max(prep,20);
-
-        if(items.coffee>0) prep = Math.max(prep,5);
-
-        arrival.setMinutes(arrival.getMinutes()-(prep+10));
-
-        return arrival;
-
-    }
-
-    return null;
-
-}
-
-function countdown(target){
-
-    if(!target) return "-";
-
-    const now = new Date();
-
-    const diff = target-now;
-
-    if(diff<=0){
-
-        return "START NOW";
-
-    }
-
-    const mins = Math.floor(diff/60000);
-
-    const hrs = Math.floor(mins/60);
-
-    const rem = mins%60;
-
-    if(hrs>0){
-
-        return hrs+"h "+rem+"m";
-
-    }
-
-    return rem+"m";
-
-}
-
-function orderCard(id,order,extra=""){
-
+    let prep = 0;
     const items = order.items || {};
 
+    if ((items.burger || 0) > 0) prep = Math.max(prep, 15);
+    if ((items.pizza || 0) > 0) prep = Math.max(prep, 20);
+    if ((items.coffee || 0) > 0) prep = Math.max(prep, 5);
+
+    arrival.setMinutes(arrival.getMinutes() - (prep + 10));
+    return arrival;
+  }
+
+  return null;
+}
+
+function countdown(target) {
+  if (!target) return "-";
+
+  const now = new Date();
+  const diff = target - now;
+
+  if (diff <= 0) return "START NOW";
+
+  const mins = Math.floor(diff / 60000);
+  const hrs = Math.floor(mins / 60);
+  const rem = mins % 60;
+
+  if (hrs > 0) return hrs + "h " + rem + "m";
+
+  return rem + "m";
+}
+
+function orderCard(id, order, extra = "") {
+  const items = order.items || {};
+  const status = order.status || "Pending";
+  const kitchenStart = getKitchenStart(order);
+
+  return `
+    <div class="order ${extra} ${status === "Pending" ? "new-order" : ""}">
+      <div class="table">Table ${order.tableNumber || "No table"}</div>
+
+      <div class="items">
+        🍔 Burger × ${items.burger || 0}<br>
+        🍕 Pizza × ${items.pizza || 0}<br>
+        ☕ Coffee × ${items.coffee || 0}
+      </div>
+
+      <div class="bill">₹${order.totalAmount || 0}</div>
+
+      ${
+        order.orderType === "Pre-order"
+          ? `
+          <div class="time-box">
+            Arrival: ${order.arrivalDate || "-"} ${order.arrivalTime || "-"}<br>
+            Kitchen Start: ${kitchenStart ? kitchenStart.toLocaleString() : "-"}<br>
+            Countdown: ${countdown(kitchenStart)}
+          </div>
+          `
+          : ""
+      }
+
+      <p><b>Status:</b> ${status}</p>
+
+      <button class="accept" onclick="updateStatus('${id}', 'Preparing')">
+        Accept / Preparing
+      </button>
+
+      <button class="ready" onclick="updateStatus('${id}', 'Ready')">
+        Ready
+      </button>
+
+      <button class="delivered" onclick="updateStatus('${id}', 'Delivered')">
+        Delivered
+      </button>
+    </div>
+  `;
+}
+
+function renderOrders() {
+  let pendingHTML = "";
+  let preparingHTML = "";
+  let readyHTML = "";
+  let deliveredHTML = "";
+  let scheduledHTML = "";
+
+  let pendingCount = 0;
+  let preparingCount = 0;
+  let readyCount = 0;
+  let deliveredCount = 0;
+
+  const now = new Date();
+
+  latestOrders.forEach(function (data) {
+    const id = data.id;
+    const order = data.order;
+    const status = order.status || "Pending";
+    const isPreorder = order.orderType === "Pre-order";
     const kitchenStart = getKitchenStart(order);
 
-    return `
-
-<div class="order ${extra} ${(order.status || "Pending") === "Pending" ? "new-order" : ""}">
-
-<div class="table">
-
-Table ${order.tableNumber}
-
-</div>
-
-<div class="items">
-
-🍔 Burger × ${items.burger||0}<br>
-
-🍕 Pizza × ${items.pizza||0}<br>
-
-☕ Coffee × ${items.coffee||0}
-
-</div>
-
-<div class="bill">
-
-₹${order.totalAmount||0}
-
-</div>
-
-${order.orderType==="Pre-order" ? `
-
-<div class="time-box">
-
-Arrival
-
-${order.arrivalDate}
-
-${order.arrivalTime}
-
-<br>
-
-Kitchen Start
-
-${kitchenStart ? kitchenStart.toLocaleString():"-"}
-
-<br>
-
-Countdown
-
-${countdown(kitchenStart)}
-
-</div>
-
-`:""}
-
-<p>
-
-<b>Status</b>
-
-${order.status}
-
-</p>
-
-<button class="accept"
-
-onclick="updateStatus('${id}','Preparing')">
-
-Accept / Preparing
-
-</button>
-
-<button class="ready"
-
-onclick="updateStatus('${id}','Ready')">
-
-Ready
-
-</button>
-
-<button class="delivered"
-
-onclick="updateStatus('${id}','Delivered')">
-
-Delivered
-
-</button>
-
-</div>
-
-`;
-
-}
-function renderOrders(){
-
-    let pendingHTML = "";
-    let preparingHTML = "";
-    let readyHTML = "";
-    let deliveredHTML = "";
-    let scheduledHTML = "";
-
-    let pendingCount = 0;
-    let preparingCount = 0;
-    let readyCount = 0;
-    let deliveredCount = 0;
-
-    const now = new Date();
-
-    latestOrders.forEach(function(data){
-
-        const id = data.id;
-        const order = data.order;
-        const status = order.status || "Pending";
-        const isPreorder = order.orderType === "Pre-order";
-        const kitchenStart = getKitchenStart(order);
-
-        if(!firstLoad && !knownOrders.has(id) && status === "Pending"){
-
-            waitingOrders.add(id);
-
-            playAlarm();
-
-        }
-
-        knownOrders.add(id);
-
-        if(isPreorder && status === "Pending" && kitchenStart){
-
-            if(kitchenStart > now){
-
-                scheduledHTML += orderCard(id,order,"preorder");
-
-                return;
-
-            }
-
-            waitingOrders.add(id);
-
-            playAlarm();
-
-            pendingHTML += orderCard(id,order,"due-now");
-
-            pendingCount++;
-
-            return;
-
-        }
-
-        if(status === "Preparing"){
-
-            preparingHTML += orderCard(id,order);
-
-            preparingCount++;
-
-        }
-
-        else if(status === "Ready"){
-
-            readyHTML += orderCard(id,order);
-
-            readyCount++;
-
-        }
-
-        else if(status === "Delivered"){
-
-            deliveredHTML += orderCard(id,order);
-
-            deliveredCount++;
-
-        }
-
-        else{
-
-            pendingHTML += orderCard(id,order);
-
-            pendingCount++;
-
-        }
-
-    });
-
-    scheduledOrders.innerHTML =
-        scheduledHTML || "<div class='empty'>No upcoming pre-orders</div>";
-
-    pendingOrders.innerHTML =
-        pendingHTML || "<div class='empty'>No pending orders</div>";
-
-    preparingOrders.innerHTML =
-        preparingHTML || "<div class='empty'>No preparing orders</div>";
-
-    readyOrders.innerHTML =
-        readyHTML || "<div class='empty'>No ready orders</div>";
-
-    deliveredOrders.innerHTML =
-        deliveredHTML || "<div class='empty'>No delivered orders</div>";
-
-    document.getElementById("pendingCount").innerText = pendingCount;
-
-    document.getElementById("preparingCount").innerText = preparingCount;
-
-    document.getElementById("readyCount").innerText = readyCount;
-
-    document.getElementById("deliveredCount").innerText = deliveredCount;
-
-    firstLoad = false;
-
+    if (!firstLoad && !knownOrders.has(id) && status === "Pending") {
+      playAlarm();
+    }
+
+    knownOrders.add(id);
+
+    if (isPreorder && status === "Pending" && kitchenStart && kitchenStart > now) {
+      scheduledHTML += orderCard(id, order, "preorder");
+      return;
+    }
+
+    if (isPreorder && status === "Pending" && kitchenStart && kitchenStart <= now) {
+      pendingHTML += orderCard(id, order, "due-now");
+      pendingCount++;
+      return;
+    }
+
+    if (status === "Preparing") {
+      preparingHTML += orderCard(id, order);
+      preparingCount++;
+    }
+
+    else if (status === "Ready") {
+      readyHTML += orderCard(id, order);
+      readyCount++;
+    }
+
+    else if (status === "Delivered") {
+      deliveredHTML += orderCard(id, order);
+      deliveredCount++;
+    }
+
+    else {
+      pendingHTML += orderCard(id, order);
+      pendingCount++;
+    }
+  });
+
+  scheduledOrders.innerHTML =
+    scheduledHTML || "<div class='empty'>No upcoming pre-orders</div>";
+
+  pendingOrders.innerHTML =
+    pendingHTML || "<div class='empty'>No pending orders</div>";
+
+  preparingOrders.innerHTML =
+    preparingHTML || "<div class='empty'>No preparing orders</div>";
+
+  readyOrders.innerHTML =
+    readyHTML || "<div class='empty'>No ready orders</div>";
+
+  deliveredOrders.innerHTML =
+    deliveredHTML || "<div class='empty'>No delivered orders</div>";
+
+  document.getElementById("pendingCount").innerText = pendingCount;
+  document.getElementById("preparingCount").innerText = preparingCount;
+  document.getElementById("readyCount").innerText = readyCount;
+  document.getElementById("deliveredCount").innerText = deliveredCount;
+
+  firstLoad = false;
 }
 
 const q = query(
-    collection(db,"orders"),
-    orderBy("createdAt","desc")
+  collection(db, "orders"),
+  orderBy("createdAt", "desc")
 );
 
-onSnapshot(q,function(snapshot){
+onSnapshot(q, function (snapshot) {
+  latestOrders = [];
 
-    latestOrders = [];
-
-    snapshot.forEach(function(orderDoc){
-
-        latestOrders.push({
-            id: orderDoc.id,
-            order: orderDoc.data()
-        });
-
+  snapshot.forEach(function (orderDoc) {
+    latestOrders.push({
+      id: orderDoc.id,
+      order: orderDoc.data()
     });
+  });
 
-    renderOrders();
-
+  renderOrders();
 });
 
-setInterval(function(){
+window.updateStatus = async function (id, status) {
+  try {
+    const orderRef = doc(db, "orders", id);
 
-    renderOrders();
-
-},30000);
-
-window.updateStatus = async function(id,status){
-
-    const orderRef = doc(db,"orders",id);
-
-    await updateDoc(orderRef,{
-        status: status
+    await updateDoc(orderRef, {
+      status: status,
+      lastUpdatedAt: new Date().toISOString()
     });
 
-    if(status === "Preparing"){
+    console.log("Order status updated:", id, status);
 
-        waitingOrders.delete(id);
-
-        if(waitingOrders.size === 0){
-
-            stopAlarm();
-
-        }
-
-    }
-
+  } catch (error) {
+    console.error("Status update failed:", error);
+    alert("Status update failed. Check console.");
+  }
 };
-
 </script>
 
 </body>
