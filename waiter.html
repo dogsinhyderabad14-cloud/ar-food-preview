@@ -4,107 +4,174 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>KRUTZ Waiter Dashboard</title>
+<title>KRUTZ Waiter Dashboard Pro</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #fff2df;
-  color: #111;
-  padding: 25px;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
-.header {
-  background: #111;
-  color: white;
-  padding: 25px;
-  border-radius: 20px;
-  text-align: center;
-  margin-bottom: 25px;
+body{
+  background:#fff2df;
+  color:#111;
+  padding:25px;
 }
 
-.header h1 {
-  color: #ff9800;
-  margin: 0;
+.header{
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:28px;
+  border-radius:24px;
+  margin-bottom:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+.header h1{
+  color:#ff9800;
+  font-size:34px;
+  margin-bottom:8px;
 }
 
-.column {
-  background: white;
-  border-radius: 18px;
-  padding: 18px;
-  min-height: 70vh;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+.header p{
+  color:#ddd;
 }
 
-.column h2 {
-  text-align: center;
-  margin-top: 0;
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:15px;
+  margin-bottom:22px;
 }
 
-.order-card {
-  background: #fff7ec;
-  padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 15px;
+.stat-card{
+  background:white;
+  padding:20px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
-@keyframes flashRequest {
-  0% { background: #fff7ec; }
-  50% { background: #ff0000; color: white; }
-  100% { background: #fff7ec; }
+.stat-card h3{
+  color:#555;
+  margin-bottom:10px;
 }
 
-.request-alert {
-  animation: flashRequest 0.6s linear infinite;
+.number{
+  font-size:30px;
+  font-weight:bold;
+  color:#ff9800;
 }
 
-.table {
-  font-size: 24px;
-  font-weight: bold;
+.board{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
 }
 
-button {
-  border: none;
-  padding: 10px 14px;
-  margin: 5px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
+.column{
+  background:white;
+  border-radius:20px;
+  padding:18px;
+  min-height:65vh;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
-.serve { background: orange; }
-.payment { background: red; color: white; }
-.clean { background: #111; color: white; }
-
-.empty {
-  text-align: center;
-  color: #777;
-  margin-top: 20px;
+.column h2{
+  text-align:center;
+  margin-bottom:15px;
 }
 
-@media(max-width: 900px) {
-  .board {
-    grid-template-columns: 1fr;
+.order-card{
+  background:#fff7ec;
+  padding:16px;
+  border-radius:16px;
+  margin-bottom:15px;
+  border-left:6px solid #ff9800;
+}
+
+.request-alert{
+  animation:flashRequest .8s linear infinite;
+}
+
+@keyframes flashRequest{
+  0%{background:#fff7ec;}
+  50%{background:#ff0000;color:white;}
+  100%{background:#fff7ec;}
+}
+
+.table{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
+
+button{
+  border:none;
+  padding:10px 14px;
+  margin:5px;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.serve{background:orange;}
+.payment{background:red;color:white;}
+.clean{background:#111;color:white;}
+.complete{background:green;color:white;}
+
+.empty{
+  text-align:center;
+  color:#777;
+  margin-top:20px;
+}
+
+.timer{
+  font-weight:bold;
+  color:#ff5722;
+  margin-top:8px;
+}
+
+@media(max-width:1000px){
+  .board{
+    grid-template-columns:1fr;
   }
 }
 </style>
 </head>
-
 <body>
 
 <div class="header">
-  <h1>🧑‍🍳 KRUTZ Waiter Dashboard</h1>
-  <p>Serve food, manage payment requests, and table cleaning</p>
+  <h1>🧑‍🍳 KRUTZ Waiter Dashboard Pro</h1>
+  <p>Serve orders, handle customer requests, manage payments and table cleaning</p>
+</div>
+
+<div class="stats">
+  <div class="stat-card">
+    <h3>Ready To Serve</h3>
+    <div class="number" id="readyCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Payment Pending</h3>
+    <div class="number" id="paymentCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Cleaning Required</h3>
+    <div class="number" id="cleaningCount">0</div>
+  </div>
+
+  <div class="stat-card">
+    <h3>Customer Requests</h3>
+    <div class="number" id="requestCount">0</div>
+  </div>
 </div>
 
 <div class="board">
+
   <div class="column">
     <h2>🟢 Ready To Serve</h2>
     <div id="readyToServe">Loading...</div>
@@ -119,24 +186,27 @@ button {
     <h2>🧹 Cleaning Required</h2>
     <div id="cleaningRequired">Loading...</div>
   </div>
+
   <div class="column">
-  <h2>🔔 Customer Requests</h2>
-  <div id="customerRequests">Loading...</div>
-</div>
+    <h2>🔔 Customer Requests</h2>
+    <div id="customerRequests">Loading...</div>
+  </div>
+
 </div>
 
+<audio id="notifySound" preload="auto">
+  <source src="notification.wav" type="audio/wav">
+</audio>
 <script type="module">
 import { db } from "./firebase.js";
 
 import {
-collection,
-onSnapshot,
-query,
-orderBy,
-doc,
-updateDoc,
-addDoc,
-serverTimestamp
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  doc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const readyToServe = document.getElementById("readyToServe");
@@ -146,6 +216,20 @@ const customerRequests = document.getElementById("customerRequests");
 const notifySound = document.getElementById("notifySound");
 
 let previousRequestCount = 0;
+
+function minutesSince(createdAt) {
+  if (!createdAt) return 0;
+
+  let date;
+
+  if (createdAt.toDate) {
+    date = createdAt.toDate();
+  } else {
+    date = new Date(createdAt);
+  }
+
+  return Math.floor((new Date() - date) / 60000);
+}
 
 function orderCard(id, order, type) {
   const items = order.items || {};
@@ -165,7 +249,7 @@ function orderCard(id, order, type) {
   }
 
   return `
-    <div class="order-card request-alert">
+    <div class="order-card">
       <div class="table">Table ${order.tableNumber || "No table"}</div>
 
       <p><b>Customer:</b> ${order.customerName || "-"}</p>
@@ -179,21 +263,42 @@ function orderCard(id, order, type) {
       <p><b>Total:</b> ₹${order.totalAmount || 0}</p>
       <p><b>Status:</b> ${order.status || "Pending"}</p>
       <p><b>Payment:</b> ${order.paymentStatus || "Unpaid"}</p>
+      <p class="timer">⏱ Waiting: ${minutesSince(order.createdAt)} mins</p>
 
       ${buttonHTML}
     </div>
   `;
 }
 
-const q = query(
+function requestCard(id, req, highlight) {
+  return `
+    <div class="order-card ${highlight ? "request-alert" : ""}">
+      <div class="table">Table ${req.tableNumber || "No table"}</div>
+
+      <p><b>Request:</b> ${req.requestType || req.request || "-"}</p>
+      <p><b>Status:</b> ${req.status || "Pending"}</p>
+      <p class="timer">⏱ Waiting: ${minutesSince(req.createdAt)} mins</p>
+
+      <button class="complete" onclick="completeRequest('${id}')">
+        Completed
+      </button>
+    </div>
+  `;
+}
+
+const ordersQuery = query(
   collection(db, "orders"),
   orderBy("createdAt", "desc")
 );
 
-onSnapshot(q, function(snapshot) {
+onSnapshot(ordersQuery, function(snapshot) {
   let readyHTML = "";
   let paymentHTML = "";
   let cleaningHTML = "";
+
+  let readyCount = 0;
+  let paymentCount = 0;
+  let cleaningCount = 0;
 
   snapshot.forEach(function(orderDoc) {
     const id = orderDoc.id;
@@ -204,111 +309,104 @@ onSnapshot(q, function(snapshot) {
 
     if (status === "Ready") {
       readyHTML += orderCard(id, order, "ready");
+      readyCount++;
     }
 
     if (status === "Delivered" && paymentStatus !== "Paid") {
       paymentHTML += orderCard(id, order, "payment");
+      paymentCount++;
     }
 
     if (paymentStatus === "Paid" && status !== "Completed") {
       cleaningHTML += orderCard(id, order, "cleaning");
+      cleaningCount++;
     }
   });
 
-  readyToServe.innerHTML = readyHTML || "<div class='empty'>No ready orders</div>";
-  waitingPayment.innerHTML = paymentHTML || "<div class='empty'>No payment requests</div>";
-  cleaningRequired.innerHTML = cleaningHTML || "<div class='empty'>No cleaning required</div>";
+  readyToServe.innerHTML =
+    readyHTML || "<div class='empty'>No ready orders</div>";
+
+  waitingPayment.innerHTML =
+    paymentHTML || "<div class='empty'>No payment requests</div>";
+
+  cleaningRequired.innerHTML =
+    cleaningHTML || "<div class='empty'>No cleaning required</div>";
+
+  document.getElementById("readyCount").innerText = readyCount;
+  document.getElementById("paymentCount").innerText = paymentCount;
+  document.getElementById("cleaningCount").innerText = cleaningCount;
+});
+
+onSnapshot(collection(db, "requests"), function(snapshot) {
+  let requestHTML = "";
+  let currentCount = 0;
+
+  snapshot.forEach(function(requestDoc) {
+    const id = requestDoc.id;
+    const req = requestDoc.data();
+
+    if (req.status !== "Completed") {
+      currentCount++;
+
+      const highlight = currentCount > previousRequestCount;
+
+      requestHTML += requestCard(id, req, highlight);
+    }
+  });
+
+  customerRequests.innerHTML =
+    requestHTML || "<div class='empty'>No customer requests</div>";
+
+  document.getElementById("requestCount").innerText = currentCount;
+
+  if (currentCount > previousRequestCount) {
+    notifySound.currentTime = 0;
+
+    notifySound.play().catch(function(error) {
+      console.log("Sound blocked:", error);
+    });
+
+    if ("vibrate" in navigator) {
+      navigator.vibrate([300, 200, 300]);
+    }
+  }
+
+  previousRequestCount = currentCount;
 });
 
 window.serveOrder = async function(id) {
-  const orderRef = doc(db, "orders", id);
-
-  await updateDoc(orderRef, {
-    status: "Delivered"
+  await updateDoc(doc(db, "orders", id), {
+    status: "Delivered",
+    lastUpdatedAt: new Date().toISOString()
   });
 };
 
 window.requestPayment = async function(id) {
-  const orderRef = doc(db, "orders", id);
-
-  await updateDoc(orderRef, {
-    status: "Delivered"
+  await updateDoc(doc(db, "orders", id), {
+    status: "Delivered",
+    lastUpdatedAt: new Date().toISOString()
   });
 
   alert("Payment request confirmed.");
 };
 
 window.markClean = async function(id) {
-  const orderRef = doc(db, "orders", id);
-
-  await updateDoc(orderRef, {
-    status: "Completed"
+  await updateDoc(doc(db, "orders", id), {
+    status: "Completed",
+    lastUpdatedAt: new Date().toISOString()
   });
 };
-function requestCard(id, req) {
-  return `
-    <div class="order-card">
-      <div class="table">Table ${req.tableNumber || "No table"}</div>
-      <p><b>Request:</b> ${req.requestType || req.request || "-"}</p>
-      <p><b>Status:</b> ${req.status || "Pending"}</p>
-      <button class="serve" onclick="completeRequest('${id}')">Completed</button>
-    </div>
-  `;
-}
-
-onSnapshot(collection(db, "requests"), function(snapshot) {
-
-    let requestHTML = "";
-    let currentCount = 0;
-
-    snapshot.forEach(function(requestDoc) {
-
-        const id = requestDoc.id;
-        const req = requestDoc.data();
-
-        if (req.status !== "Completed") {
-
-            currentCount++;
-
-            if (currentCount > previousRequestCount) {
-    requestHTML += requestCard(id, req).replace(
-        'class="order-card"',
-        'class="order-card request-alert"'
-    );
-} else {
-    requestHTML += requestCard(id, req);
-}
-
-        }
-
-    });
-
-    customerRequests.innerHTML =
-        requestHTML || "<div class='empty'>No customer requests</div>";
-
-    if (currentCount > previousRequestCount) {
-
-        // 🔔 Play notification sound
-        notifySound.currentTime = 0;
-        notifySound.play().catch(function(err) {
-            console.log("Sound blocked:", err);
-        });
-
-        // 📳 Vibrate phone (supported browsers)
-        if ("vibrate" in navigator) {
-            navigator.vibrate([300, 200, 300]);
-        }
-    }
-
-    previousRequestCount = currentCount;
-
-});
 
 window.completeRequest = async function(id) {
   await updateDoc(doc(db, "requests", id), {
-    status: "Completed"
+    status: "Completed",
+    completedAt: new Date().toISOString()
   });
 };
+
+setInterval(function() {
+  // Refresh timers without changing data
+}, 60000);
 </script>
 
 <audio id="notifySound" preload="auto">
