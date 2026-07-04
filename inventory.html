@@ -7,100 +7,263 @@
 <title>KRUTZ Inventory Management</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #f4f4f4;
   color: #111;
-  padding: 25px;
+  padding: clamp(14px, 3vw, 25px);
 }
 
 .header {
-  background: #111;
+  background: linear-gradient(135deg, #111, #222);
   color: white;
-  padding: 25px;
-  border-radius: 20px;
-  text-align: center;
-  margin-bottom: 25px;
+  padding: clamp(22px, 4vw, 32px);
+  border-radius: 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
 }
 
 .header h1 {
   color: #ff9800;
+  margin: 0 0 8px;
+  font-size: clamp(26px, 5vw, 34px);
+}
+
+.header p {
+  color: #ddd;
   margin: 0;
+  line-height: 1.5;
+}
+
+.live-badge {
+  display: inline-block;
+  margin-top: 14px;
+  background: rgba(255,152,0,.18);
+  color: #ff9800;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+  border: 1px solid rgba(255,152,0,.35);
 }
 
 .stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 15px;
-  margin-bottom: 25px;
+  margin-bottom: 22px;
 }
 
-.card {
+.stat-card {
   background: white;
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
+  border-left: 6px solid #ff9800;
 }
 
-.card h3 {
-  margin-top: 0;
+.stat-card h3 {
+  margin: 0 0 10px;
   color: #555;
+  font-size: 14px;
 }
 
-.number {
+.stat-card .number {
   font-size: 30px;
   font-weight: bold;
+  color: #111;
+}
+
+.stat-card.safe { border-left-color: #2e7d32; }
+.stat-card.low { border-left-color: #ff9800; }
+.stat-card.out { border-left-color: #d32f2f; }
+
+.ai-panel {
+  background: white;
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 22px;
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
+}
+
+.ai-panel h2 {
+  margin: 0 0 16px;
+  font-size: 22px;
+}
+
+.ai-panel h2 span {
+  color: #ff9800;
+}
+
+.ai-insight {
+  background: #fff7ec;
+  padding: 14px 16px;
+  border-radius: 14px;
+  margin-bottom: 10px;
+  border-left: 5px solid #ff9800;
+  line-height: 1.45;
+  font-size: 15px;
+}
+
+.ai-insight.urgent {
+  border-left-color: #d32f2f;
+  background: #fff5f5;
+}
+
+.ai-insight.positive {
+  border-left-color: #2e7d32;
+  background: #f1fff4;
+}
+
+.section-title {
+  margin: 0 0 16px;
+  font-size: 20px;
 }
 
 .inventory-grid {
   display: grid;
-  gap: 15px;
+  gap: 16px;
 }
 
 .item {
   background: white;
-  border-radius: 18px;
+  border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+  box-shadow: 0 5px 18px rgba(0,0,0,.12);
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 15px;
-  align-items: center;
+  grid-template-columns: 1.4fr 1fr 1fr auto;
+  gap: 16px;
+  align-items: start;
+  border-top: 4px solid #ccc;
 }
 
-.good {
-  border-left: 8px solid green;
+.item.safe { border-top-color: #2e7d32; }
+.item.low { border-top-color: #ff9800; }
+.item.out { border-top-color: #d32f2f; }
+
+.item h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
 }
 
-.low {
-  border-left: 8px solid orange;
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
 }
 
-.critical {
-  border-left: 8px solid red;
+.status-badge.safe {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.status-badge.low {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.status-badge.out {
+  background: #ffebee;
+  color: #c62828;
+}
+
+.metric-label {
+  color: #666;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 17px;
+  font-weight: bold;
+  margin: 0 0 10px;
+}
+
+.days-bar {
+  background: #eee;
+  height: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.days-fill {
+  height: 100%;
+  background: linear-gradient(135deg, #ff9800, #ff5722);
+  border-radius: 999px;
+  transition: width .3s;
+}
+
+.days-fill.danger {
+  background: linear-gradient(135deg, #f44336, #b71c1c);
+}
+
+.suggest-box {
+  background: #fff7ec;
+  border: 1px solid #f0dcc1;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.suggest-box strong {
+  color: #e65100;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 button {
   border: none;
-  padding: 10px 14px;
+  padding: 11px 16px;
   border-radius: 20px;
   cursor: pointer;
   font-weight: bold;
-  margin: 3px;
+  font-size: 14px;
 }
 
 .add {
-  background: green;
+  background: #2e7d32;
   color: white;
 }
 
 .remove {
-  background: red;
+  background: #d32f2f;
   color: white;
 }
 
-@media(max-width: 700px) {
+.add:hover { background: #1b5e20; }
+.remove:hover { background: #b71c1c; }
+
+@media (max-width: 900px) {
+  .item {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+  }
+
+  .actions button {
+    flex: 1;
+  }
+}
+
+@media (max-width: 520px) {
   .item {
     grid-template-columns: 1fr;
   }
@@ -111,36 +274,56 @@ button {
 <body>
 
 <div class="header">
-  <h1>📦 KRUTZ Inventory Management</h1>
-  <p>Track ingredients, low stock, and kitchen supply status</p>
+  <h1>📦 KRUTZ Smart Inventory</h1>
+  <p>Track stock, predict usage from live orders, and get AI reorder advice</p>
+  <span class="live-badge" id="firebaseStatus">Connecting to order data...</span>
 </div>
 
 <div class="stats">
-  <div class="card">
+  <div class="stat-card">
     <h3>Total Items</h3>
     <div class="number" id="totalItems">0</div>
   </div>
 
-  <div class="card">
-    <h3>Good Stock</h3>
-    <div class="number" id="goodStock">0</div>
+  <div class="stat-card safe">
+    <h3>Safe</h3>
+    <div class="number" id="safeStock">0</div>
   </div>
 
-  <div class="card">
+  <div class="stat-card low">
     <h3>Low Stock</h3>
     <div class="number" id="lowStock">0</div>
   </div>
 
-  <div class="card">
-    <h3>Critical</h3>
-    <div class="number" id="criticalStock">0</div>
+  <div class="stat-card out">
+    <h3>Out of Stock</h3>
+    <div class="number" id="outStock">0</div>
   </div>
 </div>
 
+<div class="ai-panel">
+  <h2>🤖 <span>AI Inventory Advisor</span></h2>
+  <div id="aiInsights">
+    <div class="ai-insight">Analyzing stock levels and order usage...</div>
+  </div>
+</div>
+
+<h2 class="section-title">📋 Ingredient Stock</h2>
 <div class="inventory-grid" id="inventoryList"></div>
 
-<script>
-let inventory = [
+<script type="module">
+import { db } from "./firebase.js";
+
+import {
+  collection,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const STORAGE_KEY = "krutz_inventory_stock";
+const MANUAL_USAGE_KEY = "krutz_inventory_manual_usage";
+const COVER_DAYS = 7;
+
+const DEFAULT_INVENTORY = [
   { name: "Burger Bun", stock: 100, min: 20, unit: "pcs" },
   { name: "Burger Patty", stock: 80, min: 20, unit: "pcs" },
   { name: "Cheese Slice", stock: 18, min: 20, unit: "pcs" },
@@ -151,60 +334,433 @@ let inventory = [
   { name: "Tomato", stock: 3, min: 10, unit: "kg" }
 ];
 
+const BOM = {
+  burger: {
+    "Burger Bun": 1,
+    "Burger Patty": 1,
+    "Cheese Slice": 1
+  },
+  pizza: {
+    "Pizza Base": 1,
+    "Pizza Cheese": 0.15,
+    "Tomato": 0.05
+  },
+  coffee: {
+    "Coffee Powder": 0.02,
+    "Milk": 0.2
+  }
+};
+
+let inventory = loadInventory();
+let orderUsageByDay = {};
+let orderUsageAvg = {};
+let usageTrendPercent = 0;
+let firebaseConnected = false;
+
+function loadInventory() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      if (Array.isArray(parsed) && parsed.length === DEFAULT_INVENTORY.length) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.log("Inventory load error:", error);
+  }
+
+  return DEFAULT_INVENTORY.map(function(item) {
+    return Object.assign({}, item);
+  });
+}
+
+function saveInventory() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+}
+
+function loadManualUsage() {
+  try {
+    const saved = localStorage.getItem(MANUAL_USAGE_KEY);
+    return saved ? JSON.parse(saved) : {};
+  } catch (error) {
+    return {};
+  }
+}
+
+function saveManualUsage(data) {
+  localStorage.setItem(MANUAL_USAGE_KEY, JSON.stringify(data));
+}
+
+function recordManualUse(itemName) {
+  const today = new Date().toISOString().slice(0, 10);
+  const usage = loadManualUsage();
+
+  if (!usage[today]) {
+    usage[today] = {};
+  }
+
+  usage[today][itemName] = (usage[today][itemName] || 0) + 1;
+  saveManualUsage(usage);
+}
+
+function getManualUsageAvg(itemName) {
+  const usage = loadManualUsage();
+  const today = new Date();
+  let total = 0;
+  let days = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().slice(0, 10);
+
+    if (usage[key] && usage[key][itemName]) {
+      total += usage[key][itemName];
+      days++;
+    }
+  }
+
+  if (days === 0) {
+    return 0;
+  }
+
+  return total / 7;
+}
+
+function getOrderDate(createdAt) {
+  if (!createdAt) {
+    return null;
+  }
+
+  if (typeof createdAt.toDate === "function") {
+    return createdAt.toDate();
+  }
+
+  return new Date(createdAt);
+}
+
+function applyBom(items) {
+  const consumption = {};
+
+  Object.keys(BOM).forEach(function(menuKey) {
+    const qty = Number(items[menuKey] || 0);
+
+    if (qty <= 0) {
+      return;
+    }
+
+    Object.keys(BOM[menuKey]).forEach(function(ingredient) {
+      consumption[ingredient] =
+        (consumption[ingredient] || 0) + BOM[menuKey][ingredient] * qty;
+    });
+  });
+
+  return consumption;
+}
+
+function computeOrderUsage(orders) {
+  orderUsageByDay = {};
+
+  orders.forEach(function(order) {
+    const status = order.status || "Pending";
+
+    if (status === "Cancelled") {
+      return;
+    }
+
+    const orderDate = getOrderDate(order.createdAt);
+
+    if (!orderDate || Number.isNaN(orderDate.getTime())) {
+      return;
+    }
+
+    const dayKey = orderDate.toISOString().slice(0, 10);
+    const consumption = applyBom(order.items || {});
+
+    if (!orderUsageByDay[dayKey]) {
+      orderUsageByDay[dayKey] = {};
+    }
+
+    Object.keys(consumption).forEach(function(ingredient) {
+      orderUsageByDay[dayKey][ingredient] =
+        (orderUsageByDay[dayKey][ingredient] || 0) + consumption[ingredient];
+    });
+  });
+
+  orderUsageAvg = {};
+  const today = new Date();
+
+  inventory.forEach(function(item) {
+    let total = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const key = date.toISOString().slice(0, 10);
+      total += (orderUsageByDay[key] && orderUsageByDay[key][item.name]) || 0;
+    }
+
+    orderUsageAvg[item.name] = total / 7;
+  });
+
+  let recentTotal = 0;
+  let priorTotal = 0;
+
+  for (let i = 0; i < 3; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().slice(0, 10);
+    const dayUsage = orderUsageByDay[key] || {};
+
+    recentTotal += Object.values(dayUsage).reduce(function(sum, val) {
+      return sum + val;
+    }, 0);
+  }
+
+  for (let i = 3; i < 7; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const key = date.toISOString().slice(0, 10);
+    const dayUsage = orderUsageByDay[key] || {};
+
+    priorTotal += Object.values(dayUsage).reduce(function(sum, val) {
+      return sum + val;
+    }, 0);
+  }
+
+  if (priorTotal > 0) {
+    usageTrendPercent = Math.round(((recentTotal - priorTotal) / priorTotal) * 100);
+  } else {
+    usageTrendPercent = recentTotal > 0 ? 100 : 0;
+  }
+}
+
+function getAvgDailyUsage(itemName) {
+  const fromOrders = orderUsageAvg[itemName] || 0;
+  const fromManual = getManualUsageAvg(itemName);
+
+  return Math.max(fromOrders, fromManual);
+}
+
 function getStatus(item) {
-  if (item.stock <= item.min / 2) {
-    return "critical";
+  if (item.stock === 0) {
+    return "out";
   }
 
   if (item.stock <= item.min) {
     return "low";
   }
 
-  return "good";
+  return "safe";
 }
 
-function getStatusText(item) {
-  const status = getStatus(item);
+function getStatusLabel(status) {
+  if (status === "out") return "Out of Stock";
+  if (status === "low") return "Low Stock";
+  return "Safe";
+}
 
-  if (status === "critical") return "🔴 Critical";
-  if (status === "low") return "🟠 Low Stock";
-  return "🟢 Good";
+function formatUsage(value, unit) {
+  if (!value || value <= 0) {
+    return "No data";
+  }
+
+  if (unit === "pcs") {
+    return value.toFixed(1) + " / day";
+  }
+
+  return value.toFixed(2) + " " + unit + " / day";
+}
+
+function getDaysRemaining(item, avgDaily) {
+  if (item.stock === 0) {
+    return { label: "0 days", value: 0, capped: false };
+  }
+
+  if (!avgDaily || avgDaily <= 0) {
+    return { label: "Monitor manually", value: null, capped: false };
+  }
+
+  const days = Math.floor(item.stock / avgDaily);
+
+  if (days > 30) {
+    return { label: "30+ days", value: 30, capped: true };
+  }
+
+  return { label: "~" + days + " day" + (days === 1 ? "" : "s"), value: days, capped: false };
+}
+
+function getSuggestedPurchase(item, avgDaily) {
+  const targetStock = Math.max(item.min * 2, avgDaily * COVER_DAYS);
+  let qty = Math.max(0, Math.ceil(targetStock - item.stock));
+
+  if (qty === 0) {
+    return 0;
+  }
+
+  if (item.unit === "pcs") {
+    qty = Math.max(5, Math.ceil(qty / 5) * 5);
+  } else {
+    qty = Math.max(1, Math.ceil(qty));
+  }
+
+  return qty;
+}
+
+function getDaysBarPercent(daysInfo) {
+  if (daysInfo.value === null) {
+    return 0;
+  }
+
+  return Math.min(100, Math.round((daysInfo.value / COVER_DAYS) * 100));
+}
+
+function renderAiInsights() {
+  const panel = document.getElementById("aiInsights");
+  const insights = [];
+
+  const urgent = inventory.filter(function(item) {
+    return getStatus(item) === "out";
+  });
+
+  const low = inventory.filter(function(item) {
+    return getStatus(item) === "low";
+  });
+
+  urgent.forEach(function(item) {
+    const avgDaily = getAvgDailyUsage(item.name);
+    const suggested = getSuggestedPurchase(item, avgDaily);
+
+    insights.push({
+      type: "urgent",
+      text:
+        "<b>" + item.name + "</b> is Out of Stock. Suggested reorder: <b>+" +
+        suggested + " " + item.unit + "</b>."
+    });
+  });
+
+  low.forEach(function(item) {
+    const avgDaily = getAvgDailyUsage(item.name);
+    const days = getDaysRemaining(item, avgDaily);
+    const suggested = getSuggestedPurchase(item, avgDaily);
+
+    insights.push({
+      type: "urgent",
+      text:
+        "<b>" + item.name + "</b> is Low Stock (" + item.stock + " " + item.unit +
+        "). " + days.label + " remaining. Suggested order: <b>+" +
+        suggested + " " + item.unit + "</b>."
+    });
+  });
+
+  inventory.forEach(function(item) {
+    const avgDaily = getAvgDailyUsage(item.name);
+    const days = getDaysRemaining(item, avgDaily);
+
+    if (getStatus(item) === "safe" && days.value !== null && days.value <= 3) {
+      const suggested = getSuggestedPurchase(item, avgDaily);
+
+      insights.push({
+        type: "default",
+        text:
+          "<b>" + item.name + "</b> is Safe but only " + days.label +
+          " left at current usage. Consider ordering <b>+" + suggested + " " + item.unit + "</b>."
+      });
+    }
+  });
+
+  if (usageTrendPercent >= 20) {
+    insights.push({
+      type: "default",
+      text:
+        "📈 Ingredient usage is up <b>" + usageTrendPercent + "%</b> in the last 3 days vs prior week. Review prep levels."
+    });
+  } else if (usageTrendPercent <= -20 && firebaseConnected) {
+    insights.push({
+      type: "positive",
+      text:
+        "📉 Usage is down <b>" + Math.abs(usageTrendPercent) + "%</b> recently. You may delay some reorders."
+    });
+  }
+
+  if (firebaseConnected) {
+    insights.push({
+      type: "default",
+      text: "🔥 Smart prediction is active using live KRUTZ order data from Firebase."
+    });
+  } else {
+    insights.push({
+      type: "default",
+      text: "📊 Using manual usage tracking. Connect to Firebase orders for smarter predictions."
+    });
+  }
+
+  if (urgent.length === 0 && low.length === 0) {
+    insights.unshift({
+      type: "positive",
+      text: "✅ All items are Safe or adequately stocked. No urgent reorders needed right now."
+    });
+  }
+
+  panel.innerHTML = insights.slice(0, 6).map(function(insight) {
+    return '<div class="ai-insight ' + insight.type + '">' + insight.text + "</div>";
+  }).join("");
 }
 
 function renderInventory() {
   const inventoryList = document.getElementById("inventoryList");
 
+  let safe = 0;
+  let low = 0;
+  let out = 0;
   let html = "";
 
-  let good = 0;
-  let low = 0;
-  let critical = 0;
-
-  inventory.forEach((item, index) => {
+  inventory.forEach(function(item, index) {
     const status = getStatus(item);
+    const avgDaily = getAvgDailyUsage(item.name);
+    const daysInfo = getDaysRemaining(item, avgDaily);
+    const suggested = getSuggestedPurchase(item, avgDaily);
+    const barPercent = getDaysBarPercent(daysInfo);
+    const barClass = daysInfo.value !== null && daysInfo.value <= 2 ? "days-fill danger" : "days-fill";
 
-    if (status === "good") good++;
+    if (status === "safe") safe++;
     if (status === "low") low++;
-    if (status === "critical") critical++;
+    if (status === "out") out++;
 
     html += `
       <div class="item ${status}">
         <div>
           <h3>${item.name}</h3>
-          <p>Status: <b>${getStatusText(item)}</b></p>
+          <span class="status-badge ${status}">${getStatusLabel(status)}</span>
+          <div class="suggest-box">
+            <strong>Suggested purchase:</strong>
+            ${suggested > 0 ? "+" + suggested + " " + item.unit : "None needed"}
+          </div>
         </div>
 
         <div>
-          <b>Stock</b>
-          <p>${item.stock} ${item.unit}</p>
+          <div class="metric-label">Stock</div>
+          <p class="metric-value">${item.stock} ${item.unit}</p>
+
+          <div class="metric-label">Minimum</div>
+          <p class="metric-value">${item.min} ${item.unit}</p>
         </div>
 
         <div>
-          <b>Minimum</b>
-          <p>${item.min} ${item.unit}</p>
+          <div class="metric-label">Daily usage</div>
+          <p class="metric-value">${formatUsage(avgDaily, item.unit)}</p>
+
+          <div class="metric-label">Est. days remaining</div>
+          <p class="metric-value">${daysInfo.label}</p>
+          <div class="days-bar">
+            <div class="${barClass}" style="width:${barPercent}%"></div>
+          </div>
         </div>
 
-        <div>
+        <div class="actions">
           <button class="add" onclick="addStock(${index})">+ Add</button>
           <button class="remove" onclick="removeStock(${index})">− Use</button>
         </div>
@@ -215,26 +771,56 @@ function renderInventory() {
   inventoryList.innerHTML = html;
 
   document.getElementById("totalItems").innerText = inventory.length;
-  document.getElementById("goodStock").innerText = good;
+  document.getElementById("safeStock").innerText = safe;
   document.getElementById("lowStock").innerText = low;
-  document.getElementById("criticalStock").innerText = critical;
+  document.getElementById("outStock").innerText = out;
+
+  renderAiInsights();
 }
 
-function addStock(index) {
+window.addStock = function(index) {
   inventory[index].stock += 5;
+  saveInventory();
   renderInventory();
-}
+};
 
-function removeStock(index) {
+window.removeStock = function(index) {
   if (inventory[index].stock > 0) {
     inventory[index].stock -= 1;
+    recordManualUse(inventory[index].name);
+    saveInventory();
   }
 
   renderInventory();
-}
+};
 
-window.addStock = addStock;
-window.removeStock = removeStock;
+onSnapshot(
+  collection(db, "orders"),
+  function(snapshot) {
+    const orders = [];
+
+    snapshot.forEach(function(orderDoc) {
+      orders.push(orderDoc.data());
+    });
+
+    computeOrderUsage(orders);
+    firebaseConnected = true;
+
+    document.getElementById("firebaseStatus").innerText =
+      "Live order prediction active";
+
+    renderInventory();
+  },
+  function(error) {
+    console.error(error);
+    firebaseConnected = false;
+
+    document.getElementById("firebaseStatus").innerText =
+      "Manual mode — order data unavailable";
+
+    renderInventory();
+  }
+);
 
 renderInventory();
 </script>
