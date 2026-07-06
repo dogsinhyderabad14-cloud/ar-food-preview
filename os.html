@@ -188,32 +188,11 @@ iframe {
       <div class="logo-icon">🍽</div>
       <div>
         <h2>KRUTZ OS</h2>
-        <p>Restaurant Operating System</p>
+        <p>Role Based Workspace</p>
       </div>
     </div>
 
-    <div class="section-label">Control Center</div>
-    <button class="nav-btn active" onclick="openPage('owner.html', this, 'Owner Dashboard')">👑 Owner Dashboard</button>
-    <button class="nav-btn" onclick="openPage('dashboard.html', this, 'Manager Dashboard')">📊 Manager Dashboard</button>
-
-    <div class="section-label">Operations</div>
-    <button class="nav-btn" onclick="openPage('kitchen.html', this, 'Kitchen Display')">👨‍🍳 Kitchen</button>
-    <button class="nav-btn" onclick="openPage('waiter.html', this, 'Waiter Dashboard')">🧑‍🍳 Waiter</button>
-    <button class="nav-btn" onclick="openPage('cashier.html', this, 'Cashier Pro')">🧾 Cashier</button>
-    <button class="nav-btn" onclick="openPage('tables.html', this, 'Table Management')">🪑 Tables</button>
-
-    <div class="section-label">Customer Experience</div>
-    <button class="nav-btn" onclick="openPage('index.html', this, 'Customer AR Menu')">📱 Customer Menu</button>
-    <button class="nav-btn" onclick="openPage('ai-order.html', this, 'AI Waiter')">🤖 AI Waiter</button>
-    <button class="nav-btn" onclick="openPage('requests.html', this, 'Customer Requests')">🔔 Requests</button>
-    <button class="nav-btn" onclick="openPage('feedback.html', this, 'Customer Feedback')">⭐ Feedback</button>
-
-    <div class="section-label">Management</div>
-    <button class="nav-btn" onclick="openPage('reservations.html', this, 'Reservations')">📅 Reservations</button>
-    <button class="nav-btn" onclick="openPage('inventory.html', this, 'Inventory')">📦 Inventory</button>
-    <button class="nav-btn" onclick="openPage('menu.html', this, 'Menu Management')">🍔 Menu</button>
-    <button class="nav-btn" onclick="openPage('staff-management.html', this, 'Staff Management')">👥 Staff</button>
-    <button class="nav-btn" onclick="openPage('notifications.html', this, 'Live Notifications')">🔔 Notifications</button>
+    <div id="navMenu"></div>
 
   </aside>
 
@@ -221,83 +200,145 @@ iframe {
 
     <div class="topbar">
       <div>
-        <h2 id="pageTitle">Owner Dashboard</h2>
+        <h2 id="pageTitle">Loading...</h2>
         <p style="color:#777;margin-top:4px;">Live KRUTZ Restaurant OS workspace</p>
       </div>
 
       <div class="top-actions">
         <div class="clock" id="clock">--:--</div>
-        <div class="role" id="roleBadge">Admin Mode</div>
+        <div class="role" id="roleBadge">Role</div>
         <button class="logout" onclick="logout()">Logout</button>
       </div>
     </div>
 
-    <iframe id="screen" src="owner.html"></iframe>
+    <iframe id="screen"></iframe>
 
   </main>
 
 </div>
+
 <script>
+const loggedIn = localStorage.getItem("loggedIn");
+const role = localStorage.getItem("role");
 
-const role = localStorage.getItem("role") || "Admin";
-
-document.getElementById("roleBadge").innerText =
-role.charAt(0).toUpperCase() + role.slice(1);
-
-function openPage(page, button, title){
-
-document.getElementById("screen").src=page;
-
-document.getElementById("pageTitle").innerText=title;
-
-document.querySelectorAll(".nav-btn").forEach(btn=>{
-
-btn.classList.remove("active");
-
-});
-
-button.classList.add("active");
-
+if (!loggedIn || !role) {
+  window.location.href = "login.html";
 }
 
-function updateClock(){
+const roleName = role.charAt(0).toUpperCase() + role.slice(1);
+document.getElementById("roleBadge").innerText = roleName;
 
-const now=new Date();
+const pages = {
+  owner: [
+  ["Control Center", "👑 Owner Dashboard", "owner.html", "Owner Dashboard"],
+  ["Control Center", "📊 Manager Dashboard", "dashboard.html", "Manager Dashboard"],
+  ["Operations", "👨‍🍳 Kitchen", "kitchen.html", "Kitchen Display"],
+  ["Operations", "🪑 Waiter", "waiter.html", "Waiter Dashboard"],
+  ["Operations", "🧾 Cashier", "cashier.html", "Cashier Pro"],
+  ["Operations", "🪑 Tables", "tables.html", "Table Management"],
+  ["Customer Experience", "📱 Customer Menu", "index.html", "Customer AR Menu"],
+  ["Customer Experience", "🤖 AI Customer Assistant", "ai-chat.html", "AI Customer Assistant"],
+  ["Management", "📅 Reservations", "reservations.html", "Reservations"],
+  ["Management", "📦 Inventory", "inventory.html", "Inventory"],
+  ["Management", "🍔 Menu", "menu.html", "Menu Management"],
+  ["Management", "👥 Staff", "staff-management.html", "Staff Management"],
+  ["Analytics", "📈 Analytics", "analytics.html", "Analytics Dashboard"],
+  ["Analytics", "🤖 AI Owner Copilot", "ai-copilot.html", "AI Owner Copilot"]
+],
 
-document.getElementById("clock").innerText=
-now.toLocaleTimeString([],{
+ manager: [
+  ["Operations", "👨‍🍳 Kitchen", "kitchen.html", "Kitchen Display"],
+  ["Operations", "🪑 Waiter", "waiter.html", "Waiter Dashboard"],
+  ["Operations", "🪑 Tables", "tables.html", "Table Management"],
+  ["Customer Experience", "🤖 AI Customer Assistant", "ai-chat.html", "AI Customer Assistant"],
+  ["Management", "📅 Reservations", "reservations.html", "Reservations"],
+  ["Management", "🍔 Menu", "menu.html", "Menu Management"]
+],
+  kitchen: [
+    ["Kitchen", "👨‍🍳 Kitchen Display", "kitchen.html", "Kitchen Display"]
+  ],
 
-hour:"2-digit",
-minute:"2-digit",
-second:"2-digit"
+waiter: [
+  ["Waiter", "🧑‍🍳 Waiter Dashboard", "waiter.html", "Waiter Dashboard"],
+  ["Waiter", "🪑 Table Map", "tables.html", "Table Management"],
+  ["Waiter", "🔔 Requests", "requests.html", "Customer Requests"],
+  ["Waiter", "🤖 AI Customer Assistant", "ai-chat.html", "AI Customer Assistant"]
+],
 
-});
+  cashier: [
+    ["Cashier", "🧾 Cashier Dashboard", "cashier.html", "Cashier Pro"],
+    ["Cashier", "🪑 Tables", "tables.html", "Table Management"]
+  ]
+};
 
+function buildNav() {
+  const navMenu = document.getElementById("navMenu");
+  const allowedPages = pages[role] || [];
+  let html = "";
+  let currentSection = "";
+
+  allowedPages.forEach(function(item, index) {
+    const section = item[0];
+    const label = item[1];
+    const page = item[2];
+    const title = item[3];
+
+    if (section !== currentSection) {
+      currentSection = section;
+      html += `<div class="section-label">${section}</div>`;
+    }
+
+    html += `
+      <button
+        class="nav-btn ${index === 0 ? "active" : ""}"
+        onclick="openPage('${page}', this, '${title}')">
+        ${label}
+      </button>
+    `;
+  });
+
+  navMenu.innerHTML = html;
+
+  if (allowedPages.length > 0) {
+    document.getElementById("screen").src = allowedPages[0][2];
+    document.getElementById("pageTitle").innerText = allowedPages[0][3];
+  }
 }
 
-setInterval(updateClock,1000);
+function openPage(page, button, title) {
+  document.getElementById("screen").src = page;
+  document.getElementById("pageTitle").innerText = title;
 
+  document.querySelectorAll(".nav-btn").forEach(function(btn) {
+    btn.classList.remove("active");
+  });
+
+  button.classList.add("active");
+}
+
+function updateClock() {
+  const now = new Date();
+
+  document.getElementById("clock").innerText =
+    now.toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+}
+
+function logout() {
+  if (confirm("Logout from KRUTZ Restaurant OS?")) {
+    localStorage.removeItem("role");
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("loginTime");
+    window.location.href = "login.html";
+  }
+}
+
+buildNav();
+setInterval(updateClock, 1000);
 updateClock();
-
-function logout(){
-
-if(confirm("Logout from KRUTZ Restaurant OS?")){
-
-localStorage.removeItem("role");
-
-window.location.href="login.html";
-
-}
-
-}
-
-// Prevent iframe caching
-window.addEventListener("load",()=>{
-
-document.getElementById("screen").src="owner.html";
-
-});
-
 </script>
 
 </body>

@@ -424,10 +424,19 @@ onSnapshot(q, function (snapshot) {
   latestOrders = [];
 
   snapshot.forEach(function (orderDoc) {
-    latestOrders.push({
-      id: orderDoc.id,
-      order: orderDoc.data()
-    });
+   const order = orderDoc.data();
+
+if (
+  order.status === "Completed" ||
+  order.tableStatus === "Available"
+) {
+  return;
+}
+
+latestOrders.push({
+  id: orderDoc.id,
+  order: order
+});
   });
 
   renderOrders();
@@ -437,10 +446,16 @@ window.updateStatus = async function (id, status) {
   try {
     const orderRef = doc(db, "orders", id);
 
-    await updateDoc(orderRef, {
-      status: status,
-      lastUpdatedAt: new Date().toISOString()
-    });
+const updateData = {
+  status: status,
+  lastUpdatedAt: new Date().toISOString()
+};
+
+if (status === "Delivered") {
+  updateData.tableStatus = "Bill Pending";
+}
+
+await updateDoc(orderRef, updateData);
 
     console.log("Order status updated:", id, status);
 

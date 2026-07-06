@@ -570,12 +570,14 @@ async function changeStatus(status) {
       });
     }
 
-    if (status === "Available") {
-      await updateDoc(orderRef, {
-        status: "Completed",
-        paymentStatus: "Paid"
-      });
-    }
+   if (status === "Available") {
+  await updateDoc(orderRef, {
+    status: "Completed",
+    paymentStatus: "Paid",
+    tableStatus: "Available",
+    completedAt: new Date().toISOString()
+  });
+}
   }
 
   closeModal();
@@ -596,7 +598,7 @@ onSnapshot(ordersQuery, function(snapshot) {
   snapshot.forEach(function(orderDoc) {
     const order = orderDoc.data();
 
-    if (order.status === "Completed") return;
+    if (order.status === "Completed" || order.tableStatus === "Available") return;
 
     applyOrderToTable(orderDoc.id, order);
   });

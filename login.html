@@ -37,13 +37,11 @@ body{
   overflow:hidden;
   box-shadow:0 25px 80px rgba(0,0,0,.55);
   backdrop-filter:blur(18px);
-  animation:fadeIn .7s ease;
 }
 
 .brand-panel{
   padding:50px;
-  background:
-    linear-gradient(135deg,rgba(255,152,0,.18),rgba(255,255,255,.04));
+  background:linear-gradient(135deg,rgba(255,152,0,.18),rgba(255,255,255,.04));
   display:flex;
   flex-direction:column;
   justify-content:space-between;
@@ -64,12 +62,10 @@ body{
   display:grid;
   place-items:center;
   font-size:30px;
-  box-shadow:0 10px 30px rgba(255,152,0,.35);
 }
 
 .logo-text h2{
   font-size:30px;
-  letter-spacing:1px;
 }
 
 .logo-text p{
@@ -90,7 +86,6 @@ body{
   color:#d8d8d8;
   font-size:17px;
   line-height:1.6;
-  max-width:480px;
 }
 
 .features{
@@ -103,8 +98,6 @@ body{
   background:rgba(255,255,255,.08);
   padding:14px 16px;
   border-radius:18px;
-  color:#f4f4f4;
-  border:1px solid rgba(255,255,255,.08);
 }
 
 .clock-box{
@@ -112,18 +105,12 @@ body{
   background:rgba(0,0,0,.25);
   padding:18px;
   border-radius:20px;
-  border:1px solid rgba(255,255,255,.1);
 }
 
 .clock-box strong{
   display:block;
   font-size:24px;
   color:#ff9800;
-}
-
-.clock-box span{
-  color:#ddd;
-  font-size:14px;
 }
 
 .login-panel{
@@ -144,8 +131,7 @@ body{
 
 .subtitle{
   color:#bbb;
-  margin-bottom:30px;
-  line-height:1.5;
+  margin-bottom:25px;
 }
 
 .role-grid{
@@ -164,14 +150,12 @@ body{
   cursor:pointer;
   font-weight:bold;
   text-align:center;
-  transition:.25s;
 }
 
 .role-chip:hover,
 .role-chip.active{
   background:#ff9800;
   color:#111;
-  transform:translateY(-2px);
 }
 
 input{
@@ -200,13 +184,6 @@ input::placeholder{
   font-size:18px;
   font-weight:bold;
   cursor:pointer;
-  transition:.25s;
-  box-shadow:0 12px 28px rgba(255,152,0,.28);
-}
-
-.login-btn:hover{
-  transform:translateY(-2px);
-  box-shadow:0 18px 35px rgba(255,152,0,.42);
 }
 
 .demo{
@@ -214,7 +191,6 @@ input::placeholder{
   background:rgba(255,255,255,.07);
   padding:16px;
   border-radius:18px;
-  border:1px solid rgba(255,255,255,.1);
   font-size:14px;
   color:#ddd;
 }
@@ -233,17 +209,6 @@ input::placeholder{
   color:#888;
   font-size:13px;
   text-align:center;
-}
-
-@keyframes fadeIn{
-  from{
-    opacity:0;
-    transform:translateY(25px);
-  }
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
 }
 
 @media(max-width:850px){
@@ -277,163 +242,171 @@ input::placeholder{
 
 <div class="login-wrapper">
 
-  <section class="brand-panel">
+<section class="brand-panel">
 
-    <div class="logo">
-      <div class="logo-icon">🍽</div>
+<div class="logo">
+<div class="logo-icon">🍽</div>
 
-      <div class="logo-text">
-        <h2>KRUTZ</h2>
-        <p>Restaurant OS</p>
-      </div>
-    </div>
+<div class="logo-text">
+<h2>KRUTZ</h2>
+<p>Restaurant OS</p>
+</div>
+</div>
 
-    <div class="hero">
-      <h1>Run your restaurant from one powerful dashboard.</h1>
+<div class="hero">
 
-      <p>
-        Manage QR ordering, kitchen flow, waiters, cashier billing,
-        tables, reservations, inventory and live analytics in one system.
-      </p>
+<h1>Run your restaurant from one powerful dashboard.</h1>
 
-      <div class="features">
-        <div class="feature">✅ 3D AR Food Menu</div>
-        <div class="feature">✅ Kitchen, Waiter & Cashier Dashboards</div>
-        <div class="feature">✅ Live Orders, Requests & Analytics</div>
-        <div class="feature">✅ Voice Ordering & Smart Restaurant Tools</div>
-      </div>
+<p>
+Manage QR Ordering, Kitchen, Waiter, Cashier,
+Inventory, Analytics and AI from one place.
+</p>
 
-      <div class="clock-box">
-        <strong id="liveTime">--:--</strong>
-        <span id="liveDate">Loading date...</span>
-      </div>
-    </div>
+<div class="features">
+<div class="feature">✅ QR Ordering</div>
+<div class="feature">✅ Kitchen Dashboard</div>
+<div class="feature">✅ Waiter Dashboard</div>
+<div class="feature">✅ Inventory & Analytics</div>
+</div>
 
-    <div style="color:#999;font-size:13px;">
-      © KRUTZ Restaurant OS · MVP v1
-    </div>
-
-  </section>
-
-  <section class="login-panel">
-
-    <div class="login-box">
-
-      <h1>Staff Login</h1>
-
-      <p class="subtitle">
-        Select your role or enter your login details to continue.
-      </p>
-
-      <div class="role-grid">
-        <div class="role-chip" onclick="fillDemo('kitchen','kitchen123',this)">👨‍🍳 Kitchen</div>
-        <div class="role-chip" onclick="fillDemo('waiter','waiter123',this)">🧑‍🍳 Waiter</div>
-        <div class="role-chip" onclick="fillDemo('cashier','cashier123',this)">🧾 Cashier</div>
-        <div class="role-chip" onclick="fillDemo('manager','manager123',this)">👨‍💼 Manager</div>
-        <div class="role-chip" onclick="fillDemo('owner','owner123',this)">👑 Owner</div>
-      </div>
-
-      <input
-        id="username"
-        type="text"
-        placeholder="Username"
-      >
-
-      <input
-        id="password"
-        type="password"
-        placeholder="Password"
-      >
-
-      <button class="login-btn" onclick="login()">
-        Login to KRUTZ
-      </button>
-
-      <div class="demo">
-        <h3>Demo Accounts</h3>
-        <p>👨‍🍳 kitchen / kitchen123</p>
-        <p>🧑‍🍳 waiter / waiter123</p>
-        <p>🧾 cashier / cashier123</p>
-        <p>👨‍💼 manager / manager123</p>
-        <p>👑 owner / owner123</p>
-      </div>
-
-      <p class="footer-note">
-        Demo login only. Firebase Authentication will be added in production.
-      </p>
-
-    </div>
-
-  </section>
+<div class="clock-box">
+<strong id="liveTime">--:--:--</strong>
+<span id="liveDate"></span>
+</div>
 
 </div>
+
+<div style="color:#999;font-size:13px;">
+© KRUTZ Restaurant OS
+</div>
+
+</section>
+
+<section class="login-panel">
+
+<div class="login-box">
+
+<h1>Staff Login</h1>
+
+<p class="subtitle">
+Login with your assigned role.
+</p>
+
+<div class="role-grid">
+
+<div class="role-chip" onclick="fillDemo('kitchen','kitchen123',this)">👨‍🍳 Kitchen</div>
+
+<div class="role-chip" onclick="fillDemo('waiter','waiter123',this)">🧑‍🍳 Waiter</div>
+
+<div class="role-chip" onclick="fillDemo('cashier','cashier123',this)">💰 Cashier</div>
+
+<div class="role-chip" onclick="fillDemo('manager','manager123',this)">👨‍💼 Manager</div>
+
+<div class="role-chip" onclick="fillDemo('owner','owner123',this)">👑 Owner</div>
+
+</div>
+
+<input
+id="username"
+placeholder="Username">
+
+<input
+id="password"
+type="password"
+placeholder="Password">
+
+<button
+class="login-btn"
+onclick="login()">
+
+Login
+
+</button>
+
+<div class="demo">
+
+<h3>Demo Accounts</h3>
+
+<p>Kitchen / kitchen123</p>
+<p>Waiter / waiter123</p>
+<p>Cashier / cashier123</p>
+<p>Manager / manager123</p>
+<p>Owner / owner123</p>
+
+</div>
+
+<p class="footer-note">
+
+Role Based Access Enabled
+
+</p>
+
+</div>
+
+</section>
+
+</div>
+
 <script>
-function fillDemo(username, password, element) {
-  document.getElementById("username").value = username;
-  document.getElementById("password").value = password;
 
-  document.querySelectorAll(".role-chip").forEach(chip => {
-    chip.classList.remove("active");
-  });
+function fillDemo(user,pass,el){
 
-  element.classList.add("active");
+document.getElementById("username").value=user;
+document.getElementById("password").value=pass;
+
+document.querySelectorAll(".role-chip").forEach(c=>{
+c.classList.remove("active");
+});
+
+el.classList.add("active");
+
 }
 
-function login() {
-  const username = document.getElementById("username").value.toLowerCase().trim();
-  const password = document.getElementById("password").value;
+function login(){
 
-  if (username === "kitchen" && password === "kitchen123") {
-    localStorage.setItem("role", "kitchen");
-    window.location.href = "kitchen.html";
-  }
+const u=document.getElementById("username").value.toLowerCase().trim();
+const p=document.getElementById("password").value;
 
-  else if (username === "waiter" && password === "waiter123") {
-    localStorage.setItem("role", "waiter");
-    window.location.href = "waiter.html";
-  }
+const users={
+kitchen:{pass:"kitchen123",page:"os.html"},
+waiter:{pass:"waiter123",page:"os.html"},
+cashier:{pass:"cashier123",page:"os.html"},
+manager:{pass:"manager123",page:"os.html"},
+owner:{pass:"owner123",page:"os.html"}
+};
+if(users[u] && users[u].pass===p){
 
-  else if (username === "cashier" && password === "cashier123") {
-    localStorage.setItem("role", "cashier");
-    window.location.href = "cashier.html";
-  }
+localStorage.setItem("role",u);
+localStorage.setItem("loggedIn","true");
+localStorage.setItem("loginTime",new Date().toISOString());
 
-  else if (username === "manager" && password === "manager123") {
-    localStorage.setItem("role", "manager");
-    window.location.href = "os.html";
-  }
+window.location.href=users[u].page;
 
-  else if (username === "owner" && password === "owner123") {
-    localStorage.setItem("role", "owner");
-    window.location.href = "owner.html";
-  }
+}
+else{
 
-  else {
-    alert("Wrong Username or Password");
-  }
+alert("Invalid Username or Password");
+
 }
 
-function updateClock() {
-  const now = new Date();
-
-  document.getElementById("liveTime").innerText =
-    now.toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    });
-
-  document.getElementById("liveDate").innerText =
-    now.toLocaleDateString([], {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric"
-    });
 }
 
-setInterval(updateClock, 1000);
+function updateClock(){
+
+const now=new Date();
+
+document.getElementById("liveTime").innerText=
+now.toLocaleTimeString();
+
+document.getElementById("liveDate").innerText=
+now.toDateString();
+
+}
+
+setInterval(updateClock,1000);
+
 updateClock();
+
 </script>
 
 </body>

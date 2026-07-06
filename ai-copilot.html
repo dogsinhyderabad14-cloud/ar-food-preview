@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>KRUTZ AI Copilot</title>
+<title>KRUTZ AI Owner Copilot</title>
 
 <style>
 *{
@@ -43,6 +43,51 @@ body{
 
 .header p{
   color:#ddd;
+  line-height:1.5;
+}
+
+.voice-panel{
+  background:white;
+  padding:22px;
+  border-radius:22px;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
+  margin-bottom:22px;
+  text-align:center;
+}
+
+.mic-btn{
+  width:120px;
+  height:120px;
+  border-radius:50%;
+  border:none;
+  background:linear-gradient(135deg,#ff9800,#ff5722);
+  color:white;
+  font-size:42px;
+  cursor:pointer;
+  box-shadow:0 15px 35px rgba(255,87,34,.35);
+}
+
+.mic-btn.listening{
+  animation:pulse 1s infinite;
+  background:linear-gradient(135deg,#00c853,#009624);
+}
+
+@keyframes pulse{
+  0%{transform:scale(1);}
+  50%{transform:scale(1.08);}
+  100%{transform:scale(1);}
+}
+
+.voice-status{
+  margin-top:14px;
+  font-weight:bold;
+  color:#555;
+}
+
+.command-text{
+  margin-top:10px;
+  color:#ff5722;
+  font-weight:bold;
 }
 
 .cards{
@@ -155,6 +200,12 @@ input{
   .message{
     max-width:92%;
   }
+
+  .mic-btn{
+    width:95px;
+    height:95px;
+    font-size:34px;
+  }
 }
 </style>
 </head>
@@ -163,8 +214,14 @@ input{
 <div class="app">
 
   <div class="header">
-    <h1>🤖 KRUTZ AI Restaurant Copilot</h1>
-    <p>Ask questions about sales, orders, payments, best sellers and kitchen status.</p>
+    <h1>🎙 KRUTZ AI Owner Copilot</h1>
+    <p>Ask with voice or text. Open dashboards, check revenue, pending orders, best sellers and payment insights.</p>
+  </div>
+
+  <div class="voice-panel">
+    <button class="mic-btn" id="micBtn" onclick="startVoice()">🎤</button>
+    <div class="voice-status" id="voiceStatus">Click microphone and speak</div>
+    <div class="command-text" id="commandText">Try: "Open Kitchen" or "Today's revenue"</div>
   </div>
 
   <div class="cards">
@@ -193,7 +250,10 @@ input{
 
     <div class="chat-box" id="chatBox">
       <div class="message bot">
-        👋 Hi Owner. I can answer questions like:<br><br>
+        👋 Hi Owner. You can type or speak:<br><br>
+        • Open Kitchen<br>
+        • Open Analytics<br>
+        • Open Inventory<br>
         • What is today's revenue?<br>
         • Which item sold most?<br>
         • How many orders are pending?<br>
@@ -206,6 +266,9 @@ input{
       <button onclick="askQuick('best seller')">🍔 Best Seller</button>
       <button onclick="askQuick('pending orders')">🔴 Pending</button>
       <button onclick="askQuick('top payment')">💳 Top Payment</button>
+      <button onclick="askQuick('open kitchen')">👨‍🍳 Kitchen</button>
+      <button onclick="askQuick('open analytics')">📈 Analytics</button>
+      <button onclick="askQuick('open inventory')">📦 Inventory</button>
     </div>
 
     <div class="input-row">
@@ -216,6 +279,7 @@ input{
   </div>
 
 </div>
+
 <script type="module">
 import { db } from "./firebase.js";
 
@@ -237,145 +301,263 @@ let analytics = {
 };
 
 const chatBox = document.getElementById("chatBox");
+const micBtn = document.getElementById("micBtn");
+const voiceStatus = document.getElementById("voiceStatus");
+const commandText = document.getElementById("commandText");
 
 function bot(text){
-  chatBox.innerHTML += `
-    <div class="message bot">${text}</div>
-  `;
+  chatBox.innerHTML += `<div class="message bot">${text}</div>`;
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 function user(text){
-  chatBox.innerHTML += `
-    <div class="message user">${text}</div>
-  `;
+  chatBox.innerHTML += `<div class="message user">${text}</div>`;
   chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function speak(text){
+  if (!("speechSynthesis" in window)) return;
+
+  const clean = text.replace(/<[^>]*>/g, "");
+  const utterance = new SpeechSynthesisUtterance(clean);
+  utterance.rate = 1;
+  utterance.pitch = 1;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+}
+
+function openDashboard(page, title){
+  const message = "Opening " + title + ".";
+  bot("🚀 " + message);
+  speak(message);
+
+  setTimeout(function(){
+    window.location.href = page;
+  }, 700);
+}
+
+function handleNavigation(q){
+  if(q.includes("kitchen")){
+    openDashboard("kitchen.html", "Kitchen Dashboard");
+    return true;
+  }
+
+  if(q.includes("waiter")){
+    openDashboard("waiter.html", "Waiter Dashboard");
+    return true;
+  }
+
+  if(q.includes("cashier")){
+    openDashboard("cashier.html", "Cashier Dashboard");
+    return true;
+  }
+
+  if(q.includes("inventory") || q.includes("stock")){
+    openDashboard("inventory.html", "Inventory");
+    return true;
+  }
+
+  if(q.includes("analytics") || q.includes("sales chart")){
+    openDashboard("analytics.html", "Analytics Dashboard");
+    return true;
+  }
+
+  if(q.includes("reservation")){
+    openDashboard("reservations.html", "Reservations");
+    return true;
+  }
+
+  if(q.includes("table")){
+    openDashboard("tables.html", "Table Management");
+    return true;
+  }
+
+  if(q.includes("customer assistant") || q.includes("ai waiter")){
+    openDashboard("ai-chat.html", "AI Customer Assistant");
+    return true;
+  }
+
+  if(q.includes("owner")){
+    openDashboard("owner.html", "Owner Dashboard");
+    return true;
+  }
+
+  return false;
 }
 
 onSnapshot(collection(db,"orders"),function(snapshot){
 
-  analytics={
-    revenue:0,
-    orders:0,
-    pending:0,
-    burger:0,
-    pizza:0,
-    coffee:0,
-    cash:0,
-    upi:0,
-    card:0
+  analytics = {
+    revenue: 0,
+    orders: 0,
+    pending: 0,
+    burger: 0,
+    pizza: 0,
+    coffee: 0,
+    cash: 0,
+    upi: 0,
+    card: 0
   };
 
   snapshot.forEach(function(doc){
-
-    const order=doc.data();
+    const order = doc.data();
+    const amount = Number(order.totalAmount || 0);
+    const items = order.items || {};
 
     analytics.orders++;
 
-    if(order.status==="Pending")
+    if(order.status === "Pending"){
       analytics.pending++;
+    }
 
-    if(order.paymentStatus==="Paid")
-      analytics.revenue+=Number(order.totalAmount||0);
+    if(order.paymentStatus === "Paid"){
+      analytics.revenue += amount;
+    }
 
-    const items=order.items||{};
+    analytics.burger += Number(items.burger || 0);
+    analytics.pizza += Number(items.pizza || 0);
+    analytics.coffee += Number(items.coffee || 0);
 
-    analytics.burger+=Number(items.burger||0);
-    analytics.pizza+=Number(items.pizza||0);
-    analytics.coffee+=Number(items.coffee||0);
+    if(order.paymentMethod === "Cash"){
+      analytics.cash += amount;
+    }
 
-    if(order.paymentMethod==="Cash")
-      analytics.cash+=Number(order.totalAmount||0);
+    if(order.paymentMethod === "UPI"){
+      analytics.upi += amount;
+    }
 
-    if(order.paymentMethod==="UPI")
-      analytics.upi+=Number(order.totalAmount||0);
-
-    if(order.paymentMethod==="Card")
-      analytics.card+=Number(order.totalAmount||0);
-
+    if(order.paymentMethod === "Card"){
+      analytics.card += amount;
+    }
   });
 
-  document.getElementById("revenue").innerText=analytics.revenue;
-  document.getElementById("orders").innerText=analytics.orders;
-  document.getElementById("pending").innerText=analytics.pending;
+  document.getElementById("revenue").innerText = analytics.revenue;
+  document.getElementById("orders").innerText = analytics.orders;
+  document.getElementById("pending").innerText = analytics.pending;
 
-  let best="Burger";
+  let best = "Burger";
 
-  if(analytics.pizza>=analytics.burger && analytics.pizza>=analytics.coffee)
-    best="Pizza";
+  if(analytics.pizza >= analytics.burger && analytics.pizza >= analytics.coffee){
+    best = "Pizza";
+  }
 
-  if(analytics.coffee>=analytics.burger && analytics.coffee>=analytics.pizza)
-    best="Coffee";
+  if(analytics.coffee >= analytics.burger && analytics.coffee >= analytics.pizza){
+    best = "Coffee";
+  }
 
-  document.getElementById("bestSeller").innerText=best;
-
+  document.getElementById("bestSeller").innerText = best;
 });
 
 function answer(question){
+  const q = question.toLowerCase();
 
-  const q=question.toLowerCase();
-
-  if(q.includes("revenue"))
-    return "💰 Today's revenue is <b>₹"+analytics.revenue+"</b>.";
-
-  if(q.includes("best"))
-    return "🏆 Best selling item is <b>"+document.getElementById("bestSeller").innerText+"</b>.";
-
-  if(q.includes("pending"))
-    return "🔴 Pending orders: <b>"+analytics.pending+"</b>.";
-
-  if(q.includes("payment")){
-
-    let top="Cash";
-
-    if(analytics.upi>=analytics.cash && analytics.upi>=analytics.card)
-      top="UPI";
-
-    if(analytics.card>=analytics.cash && analytics.card>=analytics.upi)
-      top="Card";
-
-    return "💳 Highest payment method is <b>"+top+"</b>.";
+  if(q.includes("open") || q.includes("show") || q.includes("go to")){
+    if(handleNavigation(q)){
+      return "";
+    }
   }
 
-  if(q.includes("orders"))
-    return "📦 Total orders: <b>"+analytics.orders+"</b>.";
+  if(q.includes("revenue")){
+    return "💰 Today's revenue is <b>₹" + analytics.revenue + "</b>.";
+  }
 
-  return "🤖 I can answer about revenue, orders, best seller, pending orders and payment methods.";
+  if(q.includes("best")){
+    return "🏆 Best selling item is <b>" + document.getElementById("bestSeller").innerText + "</b>.";
+  }
+
+  if(q.includes("pending")){
+    return "🔴 Pending orders: <b>" + analytics.pending + "</b>.";
+  }
+
+  if(q.includes("payment")){
+    let top = "Cash";
+
+    if(analytics.upi >= analytics.cash && analytics.upi >= analytics.card){
+      top = "UPI";
+    }
+
+    if(analytics.card >= analytics.cash && analytics.card >= analytics.upi){
+      top = "Card";
+    }
+
+    return "💳 Highest payment method is <b>" + top + "</b>.";
+  }
+
+  if(q.includes("orders")){
+    return "📦 Total orders: <b>" + analytics.orders + "</b>.";
+  }
+
+  return "🤖 I can answer about revenue, orders, best seller, pending orders and payment methods. I can also open Kitchen, Cashier, Inventory, Analytics, Reservations and Tables.";
 }
 
-window.askQuick=function(text){
-
+function processQuestion(text){
   user(text);
 
   setTimeout(function(){
-    bot(answer(text));
-  },300);
+    const reply = answer(text);
 
+    if(reply){
+      bot(reply);
+      speak(reply);
+    }
+  },300);
+}
+
+window.askQuick = function(text){
+  processQuestion(text);
 };
 
-window.askCopilot=function(){
-
-  const input=document.getElementById("questionInput");
-
-  const text=input.value.trim();
+window.askCopilot = function(){
+  const input = document.getElementById("questionInput");
+  const text = input.value.trim();
 
   if(!text) return;
 
-  user(text);
+  input.value = "";
+  processQuestion(text);
+};
 
-  input.value="";
+window.startVoice = function(){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
-  setTimeout(function(){
-    bot(answer(text));
-  },300);
+  if(!SpeechRecognition){
+    alert("Voice recognition is not supported in this browser. Use Chrome or Edge.");
+    return;
+  }
 
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-IN";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  micBtn.classList.add("listening");
+  voiceStatus.innerText = "Listening...";
+  commandText.innerText = "Speak now...";
+
+  recognition.start();
+
+  recognition.onresult = function(event){
+    const transcript = event.results[0][0].transcript;
+    commandText.innerText = transcript;
+    processQuestion(transcript);
+  };
+
+  recognition.onerror = function(event){
+    voiceStatus.innerText = "Voice error. Try again.";
+    commandText.innerText = event.error;
+    micBtn.classList.remove("listening");
+  };
+
+  recognition.onend = function(){
+    micBtn.classList.remove("listening");
+    voiceStatus.innerText = "Click microphone and speak";
+  };
 };
 
 document.getElementById("questionInput").addEventListener("keydown",function(e){
-
-  if(e.key==="Enter")
+  if(e.key === "Enter"){
     askCopilot();
-
+  }
 });
 </script>
 

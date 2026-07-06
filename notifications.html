@@ -7,276 +7,538 @@
 <title>KRUTZ Notifications</title>
 
 <style>
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f4f4f4;
-  color: #111;
-  padding: 25px;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
-.header {
-  background: #111;
-  color: white;
-  padding: 25px;
-  border-radius: 20px;
-  text-align: center;
-  margin-bottom: 25px;
+body{
+  background:#f4f4f4;
+  color:#111;
+  padding:25px;
 }
 
-.header h1 {
-  color: #ff9800;
-  margin: 0;
+.header{
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:28px;
+  border-radius:24px;
+  margin-bottom:25px;
+  box-shadow:0 10px 30px rgba(0,0,0,.18);
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+.header h1{
+  color:#ff9800;
+  margin-bottom:8px;
+  font-size:34px;
 }
 
-.column {
-  background: white;
-  border-radius: 18px;
-  padding: 18px;
-  min-height: 70vh;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+.header p{
+  color:#ddd;
 }
 
-.column h2 {
-  text-align: center;
-  margin-top: 0;
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:15px;
+  margin-bottom:25px;
 }
 
-.notification {
-  background: #fff7ec;
-  padding: 15px;
-  border-radius: 15px;
-  margin-bottom: 15px;
-  border-left: 6px solid #ff9800;
+.stat-card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  text-align:center;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
-.notification h3 {
-  margin: 0 0 8px;
+.stat-card h3{
+  color:#555;
+  margin-bottom:8px;
 }
 
-.notification p {
-  margin: 6px 0;
+.number{
+  font-size:30px;
+  font-weight:bold;
+  color:#ff9800;
 }
 
-.done {
-  background: green;
-  color: white;
-  border: none;
-  padding: 10px 14px;
-  margin-top: 8px;
-  border-radius: 20px;
-  cursor: pointer;
-  font-weight: bold;
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:18px;
 }
 
-.empty {
-  text-align: center;
-  color: #777;
-  margin-top: 20px;
+.column{
+  background:white;
+  border-radius:20px;
+  padding:18px;
+  min-height:65vh;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
-@media(max-width: 900px) {
-  .grid {
-    grid-template-columns: 1fr;
+.column h2{
+  text-align:center;
+  margin-bottom:16px;
+}
+
+.notification{
+  background:#fff7ec;
+  padding:15px;
+  border-radius:16px;
+  margin-bottom:15px;
+  border-left:6px solid #ff9800;
+}
+
+.notification h3{
+  margin-bottom:8px;
+}
+
+.notification p{
+  margin:6px 0;
+}
+
+.high{
+  border-left-color:red;
+  background:#fff1f0;
+}
+
+.medium{
+  border-left-color:#ff9800;
+}
+
+.low{
+  border-left-color:green;
+}
+
+.done{
+  background:green;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  margin-top:8px;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.open-btn{
+  background:#111;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  margin-top:8px;
+  margin-left:5px;
+  border-radius:20px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.empty{
+  text-align:center;
+  color:#777;
+  margin-top:20px;
+}
+
+@media(max-width:900px){
+  .grid{
+    grid-template-columns:1fr;
   }
 }
 </style>
 </head>
-
 <body>
 
 <div class="header">
-  <h1>🔔 KRUTZ Live Notifications</h1>
-  <p>Orders, customer requests, payments and restaurant alerts</p>
+    <h1>🔔 KRUTZ Live Notification Center</h1>
+    <p>Real-time alerts across the entire restaurant</p>
+</div>
+
+<div class="stats">
+
+<div class="stat-card">
+<h3>Total Alerts</h3>
+<div class="number" id="totalAlerts">0</div>
+</div>
+
+<div class="stat-card">
+<h3>Kitchen</h3>
+<div class="number" id="kitchenAlerts">0</div>
+</div>
+
+<div class="stat-card">
+<h3>Waiter</h3>
+<div class="number" id="waiterAlerts">0</div>
+</div>
+
+<div class="stat-card">
+<h3>Owner</h3>
+<div class="number" id="ownerAlerts">0</div>
+</div>
+
 </div>
 
 <div class="grid">
-  <div class="column">
-    <h2>👨‍🍳 Kitchen</h2>
-    <div id="kitchenNotifications">Loading...</div>
-  </div>
 
-  <div class="column">
-    <h2>🧑‍🍳 Waiter</h2>
-    <div id="waiterNotifications">Loading...</div>
-  </div>
+<div class="column">
 
-  <div class="column">
-    <h2>👑 Owner / Cashier</h2>
-    <div id="ownerNotifications">Loading...</div>
-  </div>
+<h2>👨‍🍳 Kitchen</h2>
+
+<div id="kitchenNotifications">
+Loading...
+</div>
+
+</div>
+
+<div class="column">
+
+<h2>🧑‍🍳 Waiter</h2>
+
+<div id="waiterNotifications">
+Loading...
+</div>
+
+</div>
+
+<div class="column">
+
+<h2>👑 Owner / Cashier</h2>
+
+<div id="ownerNotifications">
+Loading...
+</div>
+
+</div>
+
 </div>
 
 <script type="module">
+
 import { db } from "./firebase.js";
 
 import {
-  collection,
-  onSnapshot,
-  doc,
-  updateDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+collection,
+onSnapshot,
+doc,
+updateDoc
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const kitchenBox = document.getElementById("kitchenNotifications");
-const waiterBox = document.getElementById("waiterNotifications");
-const ownerBox = document.getElementById("ownerNotifications");
+const kitchenBox=document.getElementById("kitchenNotifications");
+const waiterBox=document.getElementById("waiterNotifications");
+const ownerBox=document.getElementById("ownerNotifications");
 
-let ordersData = [];
-let requestsData = [];
+let ordersData=[];
+let requestsData=[];
 
-function notificationCard(title, message, type, id, source) {
-  return `
-    <div class="notification">
-      <h3>${title}</h3>
-      <p>${message}</p>
-      <p><b>Type:</b> ${type}</p>
-      ${source === "request" ? `<button class="done" onclick="markRequestDone('${id}')">Mark Done</button>` : ""}
-    </div>
-  `;
+function notificationCard(title,message,type,id,source,priority,page){
+
+return `
+
+<div class="notification ${priority}">
+
+<h3>${title}</h3>
+
+<p>${message}</p>
+
+<p><b>${type}</b></p>
+
+${source==="request"
+?`<button class="done" onclick="markRequestDone('${id}')">Done</button>`
+:""}
+
+<button
+class="open-btn"
+onclick="openModule('${page}')">
+
+Open
+
+</button>
+
+</div>
+
+`;
+
 }
 
-function renderNotifications() {
-  let kitchenHTML = "";
-  let waiterHTML = "";
-  let ownerHTML = "";
+function openModule(page){
 
-  ordersData.forEach(data => {
-    const id = data.id;
-    const order = data.order;
+window.location.href=page;
 
-    const status = order.status || "Pending";
-    const paymentStatus = order.paymentStatus || "Unpaid";
-    const table = order.tableNumber || "No table";
-    const items = order.items || {};
+}
+function renderNotifications(){
 
-    if (status === "Pending") {
-      kitchenHTML += notificationCard(
-        "🔔 New Order",
-        `Table ${table} | Burger ${items.burger || 0}, Pizza ${items.pizza || 0}, Coffee ${items.coffee || 0}`,
-        "Kitchen Order",
-        id,
-        "order"
-      );
-    }
+let kitchenHTML="";
+let waiterHTML="";
+let ownerHTML="";
 
-    if (status === "Ready") {
-      waiterHTML += notificationCard(
-        "🍽 Food Ready",
-        `Table ${table} is ready to serve.`,
-        "Waiter Task",
-        id,
-        "order"
-      );
-    }
+let kitchenCount=0;
+let waiterCount=0;
+let ownerCount=0;
 
-    if (status === "Delivered" && paymentStatus !== "Paid") {
-      ownerHTML += notificationCard(
-        "💳 Payment Pending",
-        `Table ${table} bill pending. Amount ₹${order.totalAmount || 0}`,
-        "Cashier Alert",
-        id,
-        "order"
-      );
-    }
+ordersData.forEach(function(data){
 
-    if (paymentStatus === "Paid") {
-      ownerHTML += notificationCard(
-        "✅ Payment Completed",
-        `Table ${table} paid by ${order.paymentMethod || "Unknown"}.`,
-        "Payment",
-        id,
-        "order"
-      );
-    }
+const id=data.id;
+const order=data.order;
 
-    if (order.orderType === "Pre-order" && order.reservationStatus === "Reserved") {
-      ownerHTML += notificationCard(
-        "📅 New Reservation",
-        `Table ${table} reserved for ${order.arrivalDate || "-"} ${order.arrivalTime || "-"}.`,
-        "Reservation",
-        id,
-        "order"
-      );
-    }
-  });
+const status=order.status||"Pending";
+const paymentStatus=order.paymentStatus||"Unpaid";
+const table=order.tableNumber||"-";
+const items=order.items||{};
 
-  requestsData.forEach(data => {
-    const id = data.id;
-    const req = data.request;
+if(status==="Completed") return;
 
-    if (req.status === "Completed") return;
+if(status==="Pending"){
 
-    waiterHTML += notificationCard(
-      "🔔 Customer Request",
-      `Table ${req.tableNumber} requested: ${req.requestType}`,
-      "Customer Request",
-      id,
-      "request"
-    );
+kitchenCount++;
 
-    if (req.requestType === "Request Bill") {
-      ownerHTML += notificationCard(
-        "💳 Bill Requested",
-        `Table ${req.tableNumber} requested the bill.`,
-        "Cashier Alert",
-        id,
-        "request"
-      );
-    }
+kitchenHTML+=notificationCard(
 
-    if (req.requestType === "Complaint") {
-      ownerHTML += notificationCard(
-        "❗ Customer Complaint",
-        `Table ${req.tableNumber} submitted a complaint.`,
-        "Manager Alert",
-        id,
-        "request"
-      );
-    }
-  });
+"🍔 New Order",
 
-  kitchenBox.innerHTML = kitchenHTML || "<div class='empty'>No kitchen notifications</div>";
-  waiterBox.innerHTML = waiterHTML || "<div class='empty'>No waiter notifications</div>";
-  ownerBox.innerHTML = ownerHTML || "<div class='empty'>No owner/cashier notifications</div>";
+`Table ${table}<br>
+Burger ${items.burger||0} |
+Pizza ${items.pizza||0} |
+Coffee ${items.coffee||0}`,
+
+"Kitchen Order",
+
+id,
+
+"order",
+
+"high",
+
+"kitchen.html"
+
+);
+
 }
 
-onSnapshot(collection(db, "orders"), function(snapshot) {
-  ordersData = [];
+else if(status==="Ready"){
 
-  snapshot.forEach(function(orderDoc) {
-    ordersData.push({
-      id: orderDoc.id,
-      order: orderDoc.data()
-    });
-  });
+waiterCount++;
 
-  renderNotifications();
+waiterHTML+=notificationCard(
+
+"🍽 Food Ready",
+
+`Serve Table ${table}`,
+
+"Waiter Task",
+
+id,
+
+"order",
+
+"medium",
+
+"waiter.html"
+
+);
+
+}
+
+else if(status==="Delivered" && paymentStatus!=="Paid"){
+
+ownerCount++;
+
+ownerHTML+=notificationCard(
+
+"💳 Bill Pending",
+
+`Collect ₹${order.totalAmount||0} from Table ${table}`,
+
+"Cashier",
+
+id,
+
+"order",
+
+"high",
+
+"cashier.html"
+
+);
+
+}
+
+if(paymentStatus==="Paid"){
+
+ownerCount++;
+
+ownerHTML+=notificationCard(
+
+"✅ Payment Received",
+
+`${order.paymentMethod||"Unknown"} payment received.`,
+
+"Payment",
+
+id,
+
+"order",
+
+"low",
+
+"dashboard.html"
+
+);
+
+}
+
 });
 
-onSnapshot(collection(db, "requests"), function(snapshot) {
-  requestsData = [];
+requestsData.forEach(function(data){
 
-  snapshot.forEach(function(requestDoc) {
-    requestsData.push({
-      id: requestDoc.id,
-      request: requestDoc.data()
-    });
-  });
+const id=data.id;
+const req=data.request;
 
-  renderNotifications();
+if(req.status==="Completed") return;
+
+waiterCount++;
+
+waiterHTML+=notificationCard(
+
+"🔔 Customer Request",
+
+`Table ${req.tableNumber}<br>${req.requestType}`,
+
+"Customer",
+
+id,
+
+"request",
+
+"high",
+
+"waiter.html"
+
+);
+
+if(req.requestType==="Request Bill"){
+
+ownerCount++;
+
+ownerHTML+=notificationCard(
+
+"💰 Bill Requested",
+
+`Table ${req.tableNumber}`,
+
+"Cashier",
+
+id,
+
+"request",
+
+"medium",
+
+"cashier.html"
+
+);
+
+}
+
+if(req.requestType==="Complaint"){
+
+ownerCount++;
+
+ownerHTML+=notificationCard(
+
+"❗ Customer Complaint",
+
+`Table ${req.tableNumber}`,
+
+"Manager",
+
+id,
+
+"request",
+
+"high",
+
+"dashboard.html"
+
+);
+
+}
+
 });
 
-window.markRequestDone = async function(id) {
-  await updateDoc(doc(db, "requests", id), {
-    status: "Completed"
-  });
+kitchenBox.innerHTML=
+kitchenHTML||"<div class='empty'>No Notifications</div>";
+
+waiterBox.innerHTML=
+waiterHTML||"<div class='empty'>No Notifications</div>";
+
+ownerBox.innerHTML=
+ownerHTML||"<div class='empty'>No Notifications</div>";
+
+document.getElementById("kitchenAlerts").innerText=kitchenCount;
+document.getElementById("waiterAlerts").innerText=waiterCount;
+document.getElementById("ownerAlerts").innerText=ownerCount;
+document.getElementById("totalAlerts").innerText=
+kitchenCount+waiterCount+ownerCount;
+
+}
+
+onSnapshot(collection(db,"orders"),function(snapshot){
+
+ordersData=[];
+
+snapshot.forEach(function(docu){
+
+ordersData.push({
+
+id:docu.id,
+order:docu.data()
+
+});
+
+});
+
+renderNotifications();
+
+});
+
+onSnapshot(collection(db,"requests"),function(snapshot){
+
+requestsData=[];
+
+snapshot.forEach(function(docu){
+
+requestsData.push({
+
+id:docu.id,
+request:docu.data()
+
+});
+
+});
+
+renderNotifications();
+
+});
+
+window.markRequestDone=async function(id){
+
+await updateDoc(
+
+doc(db,"requests",id),
+
+{
+
+status:"Completed"
+
+}
+
+);
+
 };
+
 </script>
 
 </body>

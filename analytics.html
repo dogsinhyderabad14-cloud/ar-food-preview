@@ -4,372 +4,498 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>KRUTZ Analytics Dashboard</title>
+<title>KRUTZ Analytics Dashboard 2.0</title>
 
 <style>
-
 *{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Arial,sans-serif;
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
 body{
-background:#f4f4f4;
-padding:25px;
-color:#111;
+  background:#f4f4f4;
+  padding:25px;
+  color:#111;
 }
 
 .header{
-
-background:linear-gradient(135deg,#111,#222);
-color:white;
-padding:30px;
-border-radius:24px;
-margin-bottom:25px;
-box-shadow:0 12px 30px rgba(0,0,0,.18);
-
+  background:linear-gradient(135deg,#111,#222);
+  color:white;
+  padding:30px;
+  border-radius:24px;
+  margin-bottom:25px;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
 }
 
 .header h1{
-
-color:#ff9800;
-margin-bottom:10px;
-font-size:34px;
-
+  color:#ff9800;
+  margin-bottom:10px;
+  font-size:34px;
 }
 
 .header p{
-
-color:#ddd;
-
+  color:#ddd;
 }
 
 .cards{
-
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:18px;
-margin-bottom:25px;
-
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:18px;
+  margin-bottom:25px;
 }
 
 .card{
-
-background:white;
-padding:22px;
-border-radius:20px;
-box-shadow:0 5px 18px rgba(0,0,0,.12);
-
+  background:white;
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
 .card h3{
-
-margin-bottom:10px;
-color:#555;
-
+  margin-bottom:10px;
+  color:#555;
+  font-size:16px;
 }
 
 .number{
-
-font-size:32px;
-font-weight:bold;
-color:#ff9800;
-
+  font-size:30px;
+  font-weight:bold;
+  color:#ff9800;
 }
 
 .grid{
-
-display:grid;
-grid-template-columns:2fr 1fr;
-gap:20px;
-
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+  margin-bottom:22px;
 }
 
 .panel{
-
-background:white;
-padding:22px;
-border-radius:20px;
-box-shadow:0 5px 18px rgba(0,0,0,.12);
-
+  background:white;
+  padding:22px;
+  border-radius:20px;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
 }
 
 .panel h2{
-
-margin-bottom:18px;
-
+  margin-bottom:18px;
 }
 
 .chart-box{
-
-height:320px;
-
+  height:320px;
 }
 
 .ai-box{
-
-background:#fff7ec;
-padding:18px;
-border-radius:16px;
-margin-bottom:14px;
-border-left:6px solid #ff9800;
-
+  background:#fff7ec;
+  padding:16px;
+  border-radius:16px;
+  margin-bottom:14px;
+  border-left:6px solid #ff9800;
+  line-height:1.5;
 }
 
 .best-item{
+  display:flex;
+  justify-content:space-between;
+  padding:12px 0;
+  border-bottom:1px solid #eee;
+}
 
-display:flex;
-justify-content:space-between;
-padding:12px 0;
-border-bottom:1px solid #eee;
-
+.status-list p{
+  margin:10px 0;
+  display:flex;
+  justify-content:space-between;
 }
 
 @media(max-width:900px){
-
-.grid{
-
-grid-template-columns:1fr;
-
+  .grid{
+    grid-template-columns:1fr;
+  }
 }
-
-}
-
 </style>
-
 </head>
 <body>
 
 <div class="header">
-  <h1>📊 KRUTZ Analytics Dashboard</h1>
-  <p>Live sales, orders, payments, best sellers and AI business insights</p>
+<h1>📊 KRUTZ Analytics Dashboard 2.0</h1>
+<p>Live Restaurant Intelligence powered by Firebase</p>
 </div>
 
 <div class="cards">
 
-  <div class="card">
-    <h3>💰 Total Revenue</h3>
-    <div class="number">₹<span id="totalRevenue">0</span></div>
-  </div>
+<div class="card">
+<h3>💰 Today's Revenue</h3>
+<div class="number">₹<span id="todayRevenue">0</span></div>
+</div>
 
-  <div class="card">
-    <h3>📦 Total Orders</h3>
-    <div class="number" id="totalOrders">0</div>
-  </div>
+<div class="card">
+<h3>📦 Total Orders</h3>
+<div class="number" id="totalOrders">0</div>
+</div>
 
-  <div class="card">
-    <h3>✅ Paid Orders</h3>
-    <div class="number" id="paidOrders">0</div>
-  </div>
+<div class="card">
+<h3>💳 Average Order</h3>
+<div class="number">₹<span id="averageOrder">0</span></div>
+</div>
 
-  <div class="card">
-    <h3>⏳ Pending Orders</h3>
-    <div class="number" id="pendingOrders">0</div>
-  </div>
+<div class="card">
+<h3>🍔 Best Seller</h3>
+<div class="number" id="bestSeller">-</div>
+</div>
+
+<div class="card">
+<h3>🪑 Occupied Tables</h3>
+<div class="number" id="occupiedTables">0</div>
+</div>
+
+<div class="card">
+<h3>📈 Completion %</h3>
+<div class="number"><span id="completionRate">0</span>%</div>
+</div>
 
 </div>
 
 <div class="grid">
 
-  <div class="panel">
-    <h2>📈 Revenue by Payment Method</h2>
-    <div class="chart-box">
-      <canvas id="paymentChart"></canvas>
-    </div>
-  </div>
+<div class="panel">
 
-  <div class="panel">
-    <h2>🍔 Best Sellers</h2>
+<h2>💳 Payment Breakdown</h2>
 
-    <div class="best-item">
-      <span>🍔 Burger</span>
-      <b id="burgerSold">0</b>
-    </div>
-
-    <div class="best-item">
-      <span>🍕 Pizza</span>
-      <b id="pizzaSold">0</b>
-    </div>
-
-    <div class="best-item">
-      <span>☕ Coffee</span>
-      <b id="coffeeSold">0</b>
-    </div>
-  </div>
+<div class="chart-box">
+<canvas id="paymentChart"></canvas>
+</div>
 
 </div>
 
-<br>
+<div class="panel">
+
+<h2>🍔 Item Sales</h2>
+
+<div class="best-item">
+<span>🍔 Burger</span>
+<b id="burgerSold">0</b>
+</div>
+
+<div class="best-item">
+<span>🍕 Pizza</span>
+<b id="pizzaSold">0</b>
+</div>
+
+<div class="best-item">
+<span>☕ Coffee</span>
+<b id="coffeeSold">0</b>
+</div>
+
+<div class="best-item">
+<span>💰 Cash</span>
+<b id="cashRevenue">₹0</b>
+</div>
+
+<div class="best-item">
+<span>📲 UPI</span>
+<b id="upiRevenue">₹0</b>
+</div>
+
+<div class="best-item">
+<span>💳 Card</span>
+<b id="cardRevenue">₹0</b>
+</div>
+
+</div>
+
+</div>
 
 <div class="grid">
 
-  <div class="panel">
-    <h2>📊 Order Status Breakdown</h2>
-    <div class="chart-box">
-      <canvas id="statusChart"></canvas>
-    </div>
-  </div>
+<div class="panel">
 
-  <div class="panel">
-    <h2>🤖 AI Insights</h2>
+<h2>📦 Order Status</h2>
 
-    <div class="ai-box" id="insight1">
-      Analyzing revenue...
-    </div>
+<div class="chart-box">
+<canvas id="statusChart"></canvas>
+</div>
 
-    <div class="ai-box" id="insight2">
-      Checking best sellers...
-    </div>
+</div>
 
-    <div class="ai-box" id="insight3">
-      Checking operations...
-    </div>
-  </div>
+<div class="panel">
+
+<h2>🤖 AI Business Insights</h2>
+
+<div class="ai-box" id="insight1">
+Loading...
+</div>
+
+<div class="ai-box" id="insight2">
+Loading...
+</div>
+
+<div class="ai-box" id="insight3">
+Loading...
+</div>
+
+<div class="ai-box" id="insight4">
+Loading...
+</div>
+
+</div>
+
+</div>
+
+<div class="panel">
+
+<h2>📊 Restaurant Summary</h2>
+
+<div class="status-list">
+
+<p>
+<span>Pending Orders</span>
+<b id="pendingOrders">0</b>
+</p>
+
+<p>
+<span>Preparing</span>
+<b id="preparingOrders">0</b>
+</p>
+
+<p>
+<span>Ready</span>
+<b id="readyOrders">0</b>
+</p>
+
+<p>
+<span>Delivered</span>
+<b id="deliveredOrders">0</b>
+</p>
+
+<p>
+<span>Completed</span>
+<b id="completedOrders">0</b>
+</p>
+
+<p>
+<span>Paid Orders</span>
+<b id="paidOrders">0</b>
+</p>
+
+</div>
 
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script type="module">
+
 import { db } from "./firebase.js";
 
 import {
-  collection,
-  onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+collection,
+onSnapshot
+}
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-let paymentChart = null;
-let statusChart = null;
+let paymentChart=null;
+let statusChart=null;
 
-function money(value) {
-  return Number(value || 0).toLocaleString("en-IN");
+function money(v){
+return Number(v||0).toLocaleString("en-IN");
 }
 
-function updateChart(chartRef, canvasId, labels, data) {
-  const ctx = document.getElementById(canvasId);
+function updateChart(chartRef,id,labels,data){
 
-  if (chartRef) {
-    chartRef.destroy();
-  }
+const ctx=document.getElementById(id);
 
-  return new Chart(ctx, {
-    type: "doughnut",
-    data: {
-      labels: labels,
-      datasets: [{
-        data: data
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false
-    }
-  });
+if(chartRef){
+chartRef.destroy();
 }
 
-onSnapshot(collection(db, "orders"), function(snapshot) {
+return new Chart(ctx,{
+type:"doughnut",
+data:{
+labels:labels,
+datasets:[{
+data:data
+}]
+},
+options:{
+responsive:true,
+maintainAspectRatio:false
+}
+});
 
-  let totalRevenue = 0;
-  let totalOrders = 0;
-  let paidOrders = 0;
-  let pendingOrders = 0;
+}
+onSnapshot(collection(db,"orders"),function(snapshot){
 
-  let burgerSold = 0;
-  let pizzaSold = 0;
-  let coffeeSold = 0;
+let revenue=0;
+let orders=0;
+let paid=0;
 
-  let cashRevenue = 0;
-  let upiRevenue = 0;
-  let cardRevenue = 0;
+let pending=0;
+let preparing=0;
+let ready=0;
+let delivered=0;
+let completed=0;
 
-  let pending = 0;
-  let preparing = 0;
-  let ready = 0;
-  let delivered = 0;
-  let completed = 0;
+let burger=0;
+let pizza=0;
+let coffee=0;
 
-  snapshot.forEach(function(orderDoc) {
-    const order = orderDoc.data();
-    const items = order.items || {};
-    const amount = Number(order.totalAmount || 0);
-    const status = order.status || "Pending";
-    const paymentStatus = order.paymentStatus || "Unpaid";
+let cash=0;
+let upi=0;
+let card=0;
 
-    totalOrders++;
+let occupiedTables=0;
 
-    if (paymentStatus === "Paid") {
-      paidOrders++;
-      totalRevenue += amount;
+snapshot.forEach(function(doc){
 
-      burgerSold += Number(items.burger || 0);
-      pizzaSold += Number(items.pizza || 0);
-      coffeeSold += Number(items.coffee || 0);
+const order=doc.data();
 
-      if (order.paymentMethod === "Cash") cashRevenue += amount;
-      if (order.paymentMethod === "UPI") upiRevenue += amount;
-      if (order.paymentMethod === "Card") cardRevenue += amount;
-    } else {
-      pendingOrders++;
-    }
+const items=order.items||{};
+const amount=Number(order.totalAmount||0);
 
-    if (status === "Pending") pending++;
-    if (status === "Preparing") preparing++;
-    if (status === "Ready") ready++;
-    if (status === "Delivered") delivered++;
-    if (status === "Completed") completed++;
-  });
+orders++;
 
-  document.getElementById("totalRevenue").innerText = money(totalRevenue);
-  document.getElementById("totalOrders").innerText = totalOrders;
-  document.getElementById("paidOrders").innerText = paidOrders;
-  document.getElementById("pendingOrders").innerText = pendingOrders;
+if(order.paymentStatus==="Paid"){
 
-  document.getElementById("burgerSold").innerText = burgerSold;
-  document.getElementById("pizzaSold").innerText = pizzaSold;
-  document.getElementById("coffeeSold").innerText = coffeeSold;
+paid++;
+revenue+=amount;
 
-  paymentChart = updateChart(
-    paymentChart,
-    "paymentChart",
-    ["Cash", "UPI", "Card"],
-    [cashRevenue, upiRevenue, cardRevenue]
-  );
+burger+=Number(items.burger||0);
+pizza+=Number(items.pizza||0);
+coffee+=Number(items.coffee||0);
 
-  statusChart = updateChart(
-    statusChart,
-    "statusChart",
-    ["Pending", "Preparing", "Ready", "Delivered", "Completed"],
-    [pending, preparing, ready, delivered, completed]
-  );
+if(order.paymentMethod==="Cash")
+cash+=amount;
 
-  const bestSeller =
-    burgerSold >= pizzaSold && burgerSold >= coffeeSold
-      ? "Burger"
-      : pizzaSold >= coffeeSold
-      ? "Pizza"
-      : "Coffee";
+if(order.paymentMethod==="UPI")
+upi+=amount;
 
-  const topPayment =
-    cashRevenue >= upiRevenue && cashRevenue >= cardRevenue
-      ? "Cash"
-      : upiRevenue >= cardRevenue
-      ? "UPI"
-      : "Card";
+if(order.paymentMethod==="Card")
+card+=amount;
 
-  document.getElementById("insight1").innerText =
-    "Today's paid revenue is ₹" + money(totalRevenue) +
-    " from " + paidOrders + " paid orders.";
+}
 
-  document.getElementById("insight2").innerText =
-    "Best seller is " + bestSeller +
-    ". Consider creating combo offers around it.";
+switch(order.status){
 
-  document.getElementById("insight3").innerText =
-    "Top payment method is " + topPayment +
-    ". Pending unpaid orders: " + pendingOrders + ".";
+case "Pending":
+pending++;
+occupiedTables++;
+break;
+
+case "Preparing":
+preparing++;
+occupiedTables++;
+break;
+
+case "Ready":
+ready++;
+occupiedTables++;
+break;
+
+case "Delivered":
+delivered++;
+occupiedTables++;
+break;
+
+case "Completed":
+completed++;
+break;
+
+}
 
 });
+
+document.getElementById("todayRevenue").innerText=money(revenue);
+
+document.getElementById("totalOrders").innerText=orders;
+
+document.getElementById("averageOrder").innerText=
+money(orders?revenue/orders:0);
+
+document.getElementById("occupiedTables").innerText=
+occupiedTables;
+
+document.getElementById("paidOrders").innerText=paid;
+
+document.getElementById("pendingOrders").innerText=pending;
+
+document.getElementById("preparingOrders").innerText=preparing;
+
+document.getElementById("readyOrders").innerText=ready;
+
+document.getElementById("deliveredOrders").innerText=delivered;
+
+document.getElementById("completedOrders").innerText=completed;
+
+document.getElementById("burgerSold").innerText=burger;
+document.getElementById("pizzaSold").innerText=pizza;
+document.getElementById("coffeeSold").innerText=coffee;
+
+document.getElementById("cashRevenue").innerText="₹"+money(cash);
+document.getElementById("upiRevenue").innerText="₹"+money(upi);
+document.getElementById("cardRevenue").innerText="₹"+money(card);
+
+let best="Burger";
+
+if(pizza>=burger && pizza>=coffee)
+best="Pizza";
+
+if(coffee>=burger && coffee>=pizza)
+best="Coffee";
+
+document.getElementById("bestSeller").innerText=best;
+
+const completion=
+orders?Math.round((completed/orders)*100):0;
+
+document.getElementById("completionRate").innerText=completion;
+
+paymentChart=updateChart(
+
+paymentChart,
+
+"paymentChart",
+
+["Cash","UPI","Card"],
+
+[cash,upi,card]
+
+);
+
+statusChart=updateChart(
+
+statusChart,
+
+"statusChart",
+
+["Pending","Preparing","Ready","Delivered","Completed"],
+
+[pending,preparing,ready,delivered,completed]
+
+);
+
+document.getElementById("insight1").innerHTML=
+"💰 Revenue today is <b>₹"+money(revenue)+"</b>.";
+
+document.getElementById("insight2").innerHTML=
+"🏆 Best selling item is <b>"+best+"</b>.";
+
+const topPayment=
+cash>=upi && cash>=card
+?"Cash"
+:upi>=card
+?"UPI"
+:"Card";
+
+document.getElementById("insight3").innerHTML=
+"💳 Most customers prefer <b>"+topPayment+"</b> payments.";
+
+document.getElementById("insight4").innerHTML=
+"📦 Active kitchen load: <b>"+(pending+preparing+ready)+"</b> orders.";
+
+});
+
 </script>
 
 </body>

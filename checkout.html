@@ -20,7 +20,7 @@ body {
 }
 
 .checkout-card {
-  width: min(100%, 560px);
+  width: min(100%, 620px);
   margin: 0 auto;
   background: #fff;
   border-radius: 20px;
@@ -100,14 +100,19 @@ textarea:focus {
   border-color: #ff9800;
 }
 
-.order-type-grid {
+.order-type-grid,
+.payment-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
 }
 
-.order-type-btn {
-  min-height: 86px;
+.payment-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.order-type-btn,
+.payment-btn {
   border: 2px solid #e1c9a9;
   border-radius: 15px;
   background: #fff;
@@ -117,7 +122,19 @@ textarea:focus {
   cursor: pointer;
 }
 
-.order-type-btn.active {
+.order-type-btn {
+  min-height: 86px;
+  text-align: left;
+}
+
+.payment-btn {
+  text-align: center;
+  font-weight: bold;
+  min-height: 58px;
+}
+
+.order-type-btn.active,
+.payment-btn.active {
   border-color: #ff9800;
   background: #fff1dd;
 }
@@ -136,6 +153,47 @@ textarea:focus {
 
 .hidden {
   display: none;
+}
+
+
+.upi-box {
+  margin-top: 14px;
+  background: white;
+  border: 2px dashed #ff9800;
+  border-radius: 18px;
+  padding: 18px;
+  text-align: center;
+}
+
+.qr-placeholder {
+  width: 170px;
+  height: 170px;
+  margin: 12px auto;
+  background:
+    linear-gradient(90deg, #111 10px, transparent 10px),
+    linear-gradient(#111 10px, transparent 10px);
+  background-size: 28px 28px;
+  border: 10px solid #fff;
+  outline: 3px solid #111;
+}
+
+.paid-btn {
+  background: #111;
+  color: white;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.payment-note {
+  margin-top: 12px;
+  background: #edfff3;
+  color: #137333;
+  padding: 10px;
+  border-radius: 12px;
+  font-weight: bold;
 }
 
 .note {
@@ -199,7 +257,8 @@ textarea:focus {
     border-radius: 16px;
   }
 
-  .order-type-grid {
+  .order-type-grid,
+  .payment-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -261,6 +320,28 @@ textarea:focus {
     <p class="note">Kitchen start time is calculated automatically from your arrival time.</p>
   </section>
 
+
+  <section class="section">
+    <h3>Payment Method</h3>
+    <div class="payment-grid">
+      <button class="payment-btn active" id="cashBtn" type="button" onclick="selectPayment('Cash')">💵 Cash</button>
+      <button class="payment-btn" id="upiBtn" type="button" onclick="selectPayment('UPI')">📱 UPI</button>
+      <button class="payment-btn" id="cardBtn" type="button" onclick="selectPayment('Card')">💳 Card</button>
+    </div>
+
+    <div id="upiBox" class="upi-box hidden">
+      <h3>Scan UPI QR</h3>
+      <div class="qr-placeholder"></div>
+      <p><b>Demo UPI:</b> krutz@upi</p>
+      <button class="paid-btn" type="button" onclick="confirmUPIPayment()">I've Paid</button>
+      <div id="upiPaidMessage" class="payment-note hidden">✅ UPI payment confirmed</div>
+    </div>
+
+    <p class="note">
+      Cash orders stay unpaid for cashier confirmation. UPI/Card demo payments are saved as paid.
+    </p>
+  </section>
+
   <section class="section">
     <h3>Special Instructions</h3>
     <textarea id="specialInstructions" maxlength="300" placeholder="Example: less spicy, no onions, birthday setup, window table preference"></textarea>
@@ -277,6 +358,8 @@ textarea:focus {
   const prepMinutes = { burger: 15, pizza: 20, coffee: 5 };
   const orderData = readOrderData();
   let selectedOrderType = "now";
+  let selectedPaymentMethod = "Cash";
+  let upiPaymentConfirmed = false;
 
   function readOrderData() {
     try {
@@ -347,6 +430,54 @@ textarea:focus {
     document.getElementById("preorderFields").classList.toggle("hidden", !isPreorder);
   };
 
+  window.selectPayment = function(method) {
+    selectedPaymentMethod = method;
+
+    document.getElementById("cashBtn").classList.toggle("active", method === "Cash");
+    document.getElementById("upiBtn").classList.toggle("active", method === "UPI");
+    document.getElementById("cardBtn").classList.toggle("active", method === "Card");
+    document.getElementById("upiBox").classList.toggle("hidden", method !== "UPI");
+
+    if (method !== "UPI") {
+      upiPaymentConfirmed = false;
+      document.getElementById("upiPaidMessage").classList.add("hidden");
+    }
+  };
+
+  window.confirmUPIPayment = function() {
+    upiPaymentConfirmed = true;
+    document.getElementById("upiPaidMessage").classList.remove("hidden");
+    showMessage("UPI payment confirmed. You can now place the order.", "success");
+  };
+
+  function getPaymentInfo() {
+    if (selectedPaymentMethod === "Cash") {
+      return {
+        paymentMethod: "Cash",
+        paymentStatus: "Unpaid"
+      };
+    }
+
+    if (selectedPaymentMethod === "UPI") {
+      return {
+        paymentMethod: "UPI",
+        paymentStatus: "Paid"
+      };
+    }
+
+    if (selectedPaymentMethod === "Card") {
+      return {
+        paymentMethod: "Card",
+        paymentStatus: "Paid"
+      };
+    }
+
+    return {
+      paymentMethod: "Not selected",
+      paymentStatus: "Unpaid"
+    };
+  }
+
   function calculateKitchenStartTime(arrivalDate, arrivalTime, items) {
     if (!arrivalDate || !arrivalTime) return "";
 
@@ -409,9 +540,16 @@ textarea:focus {
       kitchenStartTime = calculateKitchenStartTime(arrivalDate, arrivalTime, items);
     }
 
+
+    if (selectedPaymentMethod === "UPI" && !upiPaymentConfirmed) {
+      showMessage("Please tap I've Paid after completing the UPI payment.", "error");
+      return;
+    }
+
+    const paymentInfo = getPaymentInfo();
     const placeOrderBtn = document.getElementById("placeOrderBtn");
     placeOrderBtn.disabled = true;
-    placeOrderBtn.innerText = "Placing Order...";
+    placeOrderBtn.innerText = selectedPaymentMethod === "Card" ? "Processing Card..." : "Placing Order...";
 
     try {
       const docRef = await addDoc(collection(db, "orders"), {
@@ -429,8 +567,9 @@ textarea:focus {
         items: items,
         totalAmount: totalAmount,
         status: "Pending",
-        paymentStatus: "Unpaid",
-        paymentMethod: "Not selected",
+        paymentStatus: paymentInfo.paymentStatus,
+        paymentMethod: paymentInfo.paymentMethod,
+        paidAt: paymentInfo.paymentStatus === "Paid" ? new Date().toISOString() : "",
         createdAt: serverTimestamp()
       });
 
