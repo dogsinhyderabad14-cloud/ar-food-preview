@@ -37,6 +37,10 @@ body {
   margin-bottom: 25px;
 }
 
+.search{
+  margin-bottom:18px;
+}
+
 input, select {
   width: 100%;
   padding: 12px;
@@ -57,13 +61,65 @@ button {
 
 .add { background: green; color: white; }
 .toggle { background: orange; color: #111; }
+.edit{
+background:#2196F3;
+color:white;
+}
 .delete { background: red; color: white; }
+
+.badge{
+
+background:#111;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:12px;
+margin-left:8px;
+
+}
 
 .staff-card {
   background: #fff7ec;
   padding: 15px;
   border-radius: 15px;
   margin-bottom: 15px;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:18px;
+  margin-bottom:25px;
+}
+
+.card{
+  background:white;
+  padding:18px;
+  border-radius:18px;
+  box-shadow:0 5px 18px rgba(0,0,0,.12);
+}
+
+.card h3{
+  color:#666;
+  margin-bottom:10px;
+}
+
+.number{
+  font-size:30px;
+  font-weight:bold;
+  color:#ff9800;
+}
+.active{
+background:#1b5e20;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+}
+
+.inactive{
+background:#b71c1c;
+color:white;
+padding:4px 10px;
+border-radius:20px;
 }
 </style>
 </head>
@@ -74,13 +130,40 @@ button {
   <h1>👥 KRUTZ Staff Management</h1>
   <p>Manage employees, roles, shifts and salary details</p>
 </div>
+<div class="stats">
+  <div class="card">
+    <h3>Total Staff</h3>
+    <div class="number" id="totalStaff">0</div>
+  </div>
 
+  <div class="card">
+    <h3>Active</h3>
+    <div class="number" id="activeStaff">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Inactive</h3>
+    <div class="number" id="inactiveStaff">0</div>
+  </div>
+
+  <div class="card">
+    <h3>Managers</h3>
+    <div class="number" id="managerCount">0</div>
+  </div>
+</div>
 <div class="form-box">
   <h2>Add Staff Member</h2>
 
   <input id="staffName" placeholder="Staff Name">
   <input id="staffPhone" placeholder="Phone Number">
+  <input id="staffEmail" placeholder="Email Address">
   <input id="staffSalary" type="number" placeholder="Monthly Salary">
+  <input
+id="staffPerformance"
+type="number"
+min="1"
+max="5"
+placeholder="Performance Rating (1-5)">const salary = Number(document.getElementById("staffSalary").value);const salary = Number(document.getElementById("staffSalary").value);
 
   <select id="staffRole">
     <option>Kitchen</option>
@@ -89,6 +172,12 @@ button {
     <option>Manager</option>
     <option>Owner</option>
   </select>
+<select id="dutyStatus">
+  <option>On Duty</option>
+  <option>Break</option>
+  <option>On Leave</option>
+  <option>Off Duty</option>
+</select>
 
   <select id="staffShift">
     <option>Morning</option>
@@ -103,6 +192,12 @@ button {
 
 <div class="staff-list">
   <h2>Live Staff List</h2>
+
+  <input
+    id="searchStaff"
+    class="search"
+    placeholder="🔍 Search by name, phone or role..."
+  >
   <div id="staffList">Loading...</div>
 </div>
 
@@ -119,27 +214,56 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const staffList = document.getElementById("staffList");
+let allStaff = [];
+let editingId = null;
 
 window.addStaff = async function() {
   const name = document.getElementById("staffName").value.trim();
   const phone = document.getElementById("staffPhone").value.trim();
+  const email = document.getElementById("staffEmail").value.trim();
   const salary = Number(document.getElementById("staffSalary").value);
+  const performance =
+Number(document.getElementById("staffPerformance").value) || 5;
   const role = document.getElementById("staffRole").value;
   const shift = document.getElementById("staffShift").value;
+  const dutyStatus = document.getElementById("dutyStatus").value;
 
   if (!name || !phone || !salary) {
     alert("Please fill name, phone and salary.");
     return;
   }
 
-  await addDoc(collection(db, "staff"), {
-    name,
-    phone,
-    salary,
-    role,
-    shift,
-    active: true
-  });
+  const employeeId =
+"EMP" + Date.now().toString().slice(-6);
+
+const joiningDate =
+new Date().toLocaleDateString("en-IN");
+
+const data = {
+
+  employeeId,
+  joiningDate,
+
+  name,
+  phone,
+  email,
+  salary,
+  performance,
+  role,
+  shift,
+  dutyStatus,
+
+  active:true
+
+};
+
+  if (editingId) {
+    await updateDoc(doc(db, "staff", editingId), data);
+    editingId = null;
+    document.querySelector(".add").innerText = "Add Staff";
+  } else {
+    await addDoc(collection(db, "staff"), data);
+  }
 
   document.getElementById("staffName").value = "";
   document.getElementById("staffPhone").value = "";
@@ -148,30 +272,107 @@ window.addStaff = async function() {
 
 onSnapshot(collection(db, "staff"), function(snapshot) {
   let html = "";
+  const search =
+document.getElementById("searchStaff")
+?.value
+.toLowerCase() || "";
 
+let total = 0;
+let active = 0;
+let inactive = 0;
+let managers = 0;
+allStaff = [];
   snapshot.forEach(function(staffDoc) {
+
     const id = staffDoc.id;
     const staff = staffDoc.data();
+    allStaff.push({
+  id: id,
+  data: staff
+});
+    if (
+  search &&
+  !staff.name.toLowerCase().includes(search) &&
+  !staff.phone.includes(search) &&
+  !staff.role.toLowerCase().includes(search)
+) {
+  return;
+}
+    total++;
+
+if (staff.active) {
+  active++;
+} else {
+  inactive++;
+}
+
+if (staff.role === "Manager") {
+  managers++;
+}
 
     html += `
       <div class="staff-card">
-        <h3>${staff.name}</h3>
-        <p><b>Phone:</b> ${staff.phone}</p>
-        <p><b>Role:</b> ${staff.role}</p>
+        <h3>
+
+${staff.name}
+
+<span
+class="badge">
+
+${staff.employeeId||"--"}
+
+</span>
+
+</h3>
+<p><b>Phone:</b> ${staff.phone}</p>
+
+<p><b>Email:</b> ${staff.email || "-"}</p>
+
+<p><b>Joined:</b>
+${staff.joiningDate || "-"}
+</p>
+
+<p><b>Role:</b> ${staff.role}</p>
+
+<p><b>Duty:</b> ${staff.dutyStatus || "On Duty"}</p>
         <p><b>Shift:</b> ${staff.shift}</p>
         <p><b>Salary:</b> ₹${staff.salary}</p>
-        <p><b>Status:</b> ${staff.active ? "Active" : "Inactive"}</p>
+        <p>
+<b>Performance:</b>
+⭐ ${staff.performance || 5}/5
+</p>
+        <p>
 
-        <button class="toggle" onclick="toggleStaff('${id}', ${staff.active})">
-          ${staff.active ? "Mark Inactive" : "Mark Active"}
-        </button>
+<b>Status:</b>
 
-        <button class="delete" onclick="deleteStaff('${id}')">Delete</button>
+<span
+class="${staff.active ? "active" : "inactive"}">
+
+${staff.active ? "🟢 Active" : "🔴 Inactive"}
+
+</span>
+
+</p>
+<button class="edit" onclick="editStaff('${id}')">
+✏️ Edit
+</button>
+
+<button class="toggle" onclick="toggleStaff('${id}', ${staff.active})">
+${staff.active ? "Mark Inactive" : "Mark Active"}
+</button>
+
+<button class="delete" onclick="deleteStaff('${id}')">
+🗑 Delete
+</button>
       </div>
     `;
   });
 
   staffList.innerHTML = html || "No staff added yet.";
+  document.getElementById("totalStaff").innerText = total;
+document.getElementById("activeStaff").innerText = active;
+document.getElementById("inactiveStaff").innerText = inactive;
+document.getElementById("managerCount").innerText = managers;
 });
 
 window.toggleStaff = async function(id, current) {
@@ -182,6 +383,52 @@ window.toggleStaff = async function(id, current) {
 
 window.deleteStaff = async function(id) {
   await deleteDoc(doc(db, "staff", id));
+};
+document.getElementById("searchStaff").addEventListener("input", function () {
+
+  const search = this.value.toLowerCase();
+
+  document.querySelectorAll(".staff-card").forEach(function(card){
+
+    const text = card.innerText.toLowerCase();
+
+    if(text.includes(search)){
+      card.style.display = "block";
+    }else{
+      card.style.display = "none";
+    }
+
+  });
+
+});
+window.editStaff = function(id){
+
+editingId = id;
+
+const employee = allStaff.find(item => item.id === id);
+
+if(!employee){
+  alert("Employee not found.");
+  return;
+}
+
+const staff = employee.data;
+
+document.getElementById("staffName").value = staff.name || "";
+document.getElementById("staffPhone").value = staff.phone || "";
+document.getElementById("staffSalary").value = staff.salary || "";
+document.getElementById("staffRole").value = staff.role || "Kitchen";
+document.getElementById("staffShift").value = staff.shift || "Morning";
+document.getElementById("staffEmail").value = staff.email || "";
+document.getElementById("dutyStatus").value = staff.dutyStatus || "On Duty";
+
+document.querySelector(".add").innerText = "💾 Save Changes";
+
+window.scrollTo({
+  top:0,
+  behavior:"smooth"
+});
+
 };
 </script>
 
