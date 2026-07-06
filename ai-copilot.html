@@ -285,25 +285,39 @@ import { db } from "./firebase.js";
 
 import {
   collection,
-  onSnapshot
+  onSnapshot,
+  query
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 let analytics = {
-  revenue: 0,
-  orders: 0,
-  pending: 0,
-  burger: 0,
-  pizza: 0,
-  coffee: 0,
-  cash: 0,
-  upi: 0,
-  card: 0
+  revenue:0,
+  orders:0,
+  pending:0,
+
+  unpaid:0,
+
+  burger:0,
+  pizza:0,
+  coffee:0,
+
+  occupiedTables:0,
+availableTables:0,
+
+  cash:0,
+  upi:0,
+  card:0
 };
 
 const chatBox = document.getElementById("chatBox");
 const micBtn = document.getElementById("micBtn");
 const voiceStatus = document.getElementById("voiceStatus");
 const commandText = document.getElementById("commandText");
+let tableStats = {
+  occupied:0,
+  available:0,
+  cleaning:0,
+  reserved:0
+};
 
 function bot(text){
   chatBox.innerHTML += `<div class="message bot">${text}</div>`;
@@ -388,19 +402,36 @@ function handleNavigation(q){
 onSnapshot(collection(db,"orders"),function(snapshot){
 
   analytics = {
-    revenue: 0,
-    orders: 0,
-    pending: 0,
-    burger: 0,
-    pizza: 0,
-    coffee: 0,
-    cash: 0,
-    upi: 0,
-    card: 0
-  };
+  revenue:0,
+  orders:0,
+  pending:0,
+
+  unpaid:0,
+
+  burger:0,
+  pizza:0,
+  coffee:0,
+
+  occupiedTables:0,
+availableTables:0,
+
+  cash:0,
+  upi:0,
+  card:0
+};
 
   snapshot.forEach(function(doc){
     const order = doc.data();
+ const activeStatuses = ["Pending", "Preparing", "Ready", "Delivered"];
+
+if (
+  order.tableNumber &&
+  activeStatuses.includes(order.status) &&
+  order.status !== "Completed" &&
+  order.tableStatus !== "Available"
+) {
+  analytics.occupiedTables++;
+}
     const amount = Number(order.totalAmount || 0);
     const items = order.items || {};
 
@@ -409,6 +440,10 @@ onSnapshot(collection(db,"orders"),function(snapshot){
     if(order.status === "Pending"){
       analytics.pending++;
     }
+
+    if(order.paymentStatus !== "Paid"){
+  analytics.unpaid++;
+}
 
     if(order.paymentStatus === "Paid"){
       analytics.revenue += amount;
@@ -446,10 +481,138 @@ onSnapshot(collection(db,"orders"),function(snapshot){
   }
 
   document.getElementById("bestSeller").innerText = best;
+  onSnapshot(collection(db,"tables"),function(snapshot){
+
+tableStats={
+occupied:0,
+available:0,
+cleaning:0,
+reserved:0
+};
+
+snapshot.forEach(function(tableDoc){
+
+  console.log(tableDoc.data());
+
+const table=tableDoc.data();
+
+const status=(table.status||"").toLowerCase();
+
+if(status==="occupied")
+tableStats.occupied++;
+
+else if(status==="available")
+tableStats.available++;
+
+else if(status==="cleaning")
+tableStats.cleaning++;
+
+else if(status==="reserved")
+tableStats.reserved++;
+
+});
+
+});
 });
 
 function answer(question){
   const q = question.toLowerCase();
+  if(
+q.includes("how is my restaurant") ||
+q.includes("restaurant status") ||
+q.includes("restaurant report") ||
+q.includes("today report")
+){
+
+let best =
+document.getElementById("bestSeller").innerText;
+
+let report = "";
+
+report += "Good day.<br><br>";
+
+report += "Today's revenue is ₹" +
+analytics.revenue +
+".<br>";
+
+report += "Total orders are " +
+analytics.orders +
+".<br>";
+
+report += "Pending orders are " +
+analytics.pending +
+".<br>";
+
+report += "Unpaid bills are " +
+analytics.unpaid +
+".<br>";
+
+report += "Today's best seller is " +
+best +
+".<br><br>";
+
+if(best==="Burger"){
+report += "AI Recommendation: Promote Pizza Combo today.";
+}
+else if(best==="Pizza"){
+report += "AI Recommendation: Promote Coffee with Pizza.";
+}
+else{
+report += "AI Recommendation: Promote Burger Combo.";
+}
+
+return report;
+
+}
+  if(
+q.includes("close restaurant") ||
+q.includes("closing report") ||
+q.includes("close shop")
+){
+
+let report = "";
+
+report += "Restaurant Closing Report.<br><br>";
+
+report += "Revenue : ₹" + analytics.revenue + "<br>";
+
+report += "Total Orders : " + analytics.orders + "<br>";
+
+report += "Pending Orders : " + analytics.pending + "<br>";
+
+report += "Unpaid Bills : " + analytics.unpaid + "<br>";
+
+report += "Occupied Tables : " + tableStats.occupied + "<br>";
+
+report += "Occupied Tables : " + analytics.occupiedTables + "<br>";
+
+report += "Available Tables : " + tableStats.available + "<br>";
+
+report += "Reserved Tables : " + tableStats.reserved + "<br>";
+
+report += "Best Seller : " +
+document.getElementById("bestSeller").innerText +
+"<br><br>";
+
+if(
+analytics.pending>0 ||
+analytics.unpaid>0 ||
+analytics.occupiedTables>0
+){
+
+report +=
+"⚠ Pending orders must be completed before closing.";
+
+}else{
+
+report +=
+"✅ Kitchen is clear. Restaurant can be closed.";
+
+}
+
+return report;
+
+}
 
   if(q.includes("open") || q.includes("show") || q.includes("go to")){
     if(handleNavigation(q)){
