@@ -183,13 +183,39 @@ button:hover {
 
 <body>
 
-<header>
-  <h1>KRUTZ Food AR Menu</h1>
-  <p>View food in 3D and place it on your table using AR</p>
+  <header>
 
-  <div class="header-buttons">
-    <button class="scanner-btn" onclick="openScanner()">📷 Scan Table QR</button>
-  </div>
+<div style="display:flex;justify-content:space-between;align-items:center;">
+
+<div>
+<h1>KRUTZ Food AR Menu</h1>
+<p>View food in 3D and place it on your table using AR</p>
+</div>
+
+<div>
+<button
+onclick="window.location.href='login.html'"
+style="
+background:#222;
+color:white;
+padding:12px 22px;
+border:none;
+border-radius:25px;
+font-weight:bold;
+cursor:pointer;
+">
+🔐 Staff Login
+</button>
+</div>
+
+</div>
+
+<div class="header-buttons">
+<button class="scanner-btn" onclick="openScanner()">
+📷 Scan Table QR
+</button>
+</div>
+
 </header>
 
 <div class="table-box">
