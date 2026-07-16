@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>KRUTZ Whole Order AR</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(
+          circle at top left,
+          rgba(255, 152, 0, 0.2),
+          transparent 35%
+        ),
+        linear-gradient(135deg, #080808, #171717, #242424);
+
+      color: white;
+      padding: 20px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin: auto;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #111, #242424);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 26px;
+      padding: 28px;
+      margin-bottom: 20px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    }
+
+    .header h1 {
+      color: #ff9800;
+      margin-bottom: 8px;
+      font-size: 34px;
+    }
+
+    .header p {
+      color: #ccc;
+      line-height: 1.5;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 20px;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 22px;
+      backdrop-filter: blur(12px);
+    }
+
+    .panel h2 {
+      margin-bottom: 18px;
+      color: #ff9800;
+    }
+
+    .order-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+    }
+
+    .order-item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .food-icon {
+      font-size: 28px;
+    }
+
+    .food-name {
+      font-weight: bold;
+    }
+
+    .food-quantity {
+      background: #ff9800;
+      color: #111;
+      min-width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      font-weight: bold;
+    }
+
+    .empty-message {
+      color: #bbb;
+      line-height: 1.6;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+    }
+
+    #sceneContainer {
+      width: 100%;
+      height: 620px;
+      border-radius: 22px;
+      overflow: hidden;
+      background:
+        radial-gradient(
+          circle at center,
+          rgba(255, 152, 0, 0.15),
+          transparent 45%
+        ),
+        #111;
+
+      position: relative;
+    }
+
+    #sceneContainer canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    .scene-message {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      z-index: 5;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 12px 14px;
+      border-radius: 14px;
+      color: white;
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .loading {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      z-index: 4;
+      background: rgba(0, 0, 0, 0.45);
+      font-weight: bold;
+      color: #ff9800;
+    }
+
+    .actions {
+      margin-top: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    button,
+    .button-link {
+      width: 100%;
+      border: none;
+      padding: 14px 18px;
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, #ff9800, #ff5722);
+      color: white;
+    }
+
+    .secondary-button {
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+    }
+
+    .info-box {
+      margin-top: 18px;
+      padding: 14px;
+      background: rgba(255, 152, 0, 0.12);
+      border-left: 4px solid #ff9800;
+      border-radius: 14px;
+      color: #ddd;
+      line-height: 1.5;
+      font-size: 14px;
+    }
+
+    @media (max-width: 850px) {
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+
+      #sceneContainer {
+        height: 520px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+      }
+    }
+
+    @media (max-width: 500px) {
+      body {
+        padding: 12px;
+      }
+
+      .header,
+      .panel {
+        padding: 18px;
+      }
+
+      #sceneContainer {
+        height: 440px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header class="header">
+      <h1>🍽️ KRUTZ Whole Order Preview</h1>
+
+      <p>
+        View all selected food items together before completing your order.
+        Drag to rotate, scroll or pinch to zoom.
+      </p>
+    </header>
+
+    <div class="content-grid">
+
+      <aside class="panel">
+
+        <h2>Your Order</h2>
+
+        <div id="orderSummary"></div>
+
+        <div class="actions">
+
+          <button
+            class="primary-button"
+            id="resetViewButton"
+            type="button"
+          >
+            Reset 3D View
+          </button>
+
+          <a
+            href="index.html"
+            class="button-link secondary-button"
+          >
+            Back to Menu
+          </a>
+
+        </div>
+
+        <div class="info-box">
+          On a compatible Android phone, tap START AR, slowly scan the table,
+          wait for the orange placement circle, and then tap once to place the complete order.
+        </div>
+
+      </aside>
+
+      <main class="panel">
+
+        <h2>Complete Order Scene</h2>
+
+        <div id="sceneContainer">
+
+          <div class="scene-message">
+            3D: drag to rotate • AR: scan table, wait for orange circle, then tap
+          </div>
+
+          <div class="loading" id="loadingMessage">
+            Loading your complete order...
+          </div>
+
+        </div>
+
+      </main>
+
+    </div>
+
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+
+    import * as THREE from "three";
+
+    import { OrbitControls }
+      from "three/addons/controls/OrbitControls.js";
+
+    import { GLTFLoader }
+      from "three/addons/loaders/GLTFLoader.js";
+
+      import { ARButton }
+  from "three/addons/webxr/ARButton.js";
+
+
+    const cart = JSON.parse(
+      localStorage.getItem("krutzCart")
+    ) || {
+      burger: 0,
+      pizza: 0,
+      coffee: 0
+    };
+
+
+    const foodData = {
+      burger: {
+        name: "Chicken Burger",
+        icon: "🍔",
+        model: "burger.glb",
+        scale: 1
+      },
+
+      pizza: {
+        name: "Pizza",
+        icon: "🍕",
+        model: "pizza.glb",
+        scale: 1
+      },
+
+      coffee: {
+        name: "Coffee",
+        icon: "☕",
+        model: "coffee_cup.glb",
+        scale: 1
+      }
+    };
+
+
+    const orderSummary =
+      document.getElementById("orderSummary");
+
+    const loadingMessage =
+      document.getElementById("loadingMessage");
+
+    const sceneContainer =
+      document.getElementById("sceneContainer");
+
+
+    function showOrderSummary() {
+
+      const selectedItems = Object.keys(cart).filter(
+        item => cart[item] > 0 && foodData[item]
+      );
+
+      if (selectedItems.length === 0) {
+
+        orderSummary.innerHTML = `
+          <div class="empty-message">
+            Your cart is empty.<br><br>
+            Go back to the menu and add Burger, Pizza or Coffee.
+          </div>
+        `;
+
+        return;
+      }
+
+      orderSummary.innerHTML = selectedItems.map(item => {
+
+        const food = foodData[item];
+
+        return `
+          <div class="order-item">
+
+            <div class="order-item-left">
+
+              <span class="food-icon">
+                ${food.icon}
+              </span>
+
+              <span class="food-name">
+                ${food.name}
+              </span>
+
+            </div>
+
+            <span class="food-quantity">
+              ${cart[item]}
+            </span>
+
+          </div>
+        `;
+
+      }).join("");
+    }
+
+
+    showOrderSummary();
+
+
+    const scene = new THREE.Scene();
+
+   scene.background = new THREE.Color(0xf8f8f8);
+
+
+    const camera = new THREE.PerspectiveCamera(
+      45,
+      sceneContainer.clientWidth /
+      sceneContainer.clientHeight,
+      0.01,
+      100
+    );
+
+    camera.position.set(0, 2.4, 4.8);
+
+
+    const renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: true
+});
+
+    renderer.setPixelRatio(
+      Math.min(window.devicePixelRatio, 2)
+    );
+
+    renderer.setSize(
+      sceneContainer.clientWidth,
+      sceneContainer.clientHeight
+    );
+
+    renderer.outputColorSpace =
+      THREE.SRGBColorSpace;
+
+    renderer.shadowMap.enabled = true;
+    renderer.xr.enabled = true;
+
+    renderer.shadowMap.type =
+      THREE.PCFSoftShadowMap;
+
+    sceneContainer.appendChild(renderer.domElement);
+    const arButton = ARButton.createButton(
+  renderer,
+  {
+    requiredFeatures: ["hit-test"],
+    optionalFeatures: ["dom-overlay"],
+    domOverlay: {
+      root: document.body
+    }
+  }
+);
+
+document.body.appendChild(arButton);
+
+
+    const controls = new OrbitControls(
+      camera,
+      renderer.domElement
+    );
+
+    controls.enableDamping = true;
+
+    controls.dampingFactor = 0.07;
+
+    controls.target.set(0, 0.5, 0);
+
+    controls.minDistance = 1.5;
+
+    controls.maxDistance = 10;
+
+    controls.maxPolarAngle =
+      Math.PI / 2.05;
+
+
+    
+    const ambientLight =
+  new THREE.HemisphereLight(
+    0xffffff,
+    0xf5e6c8,
+    3.8
+  );
+
+    scene.add(ambientLight);
+
+const mainLight =
+  new THREE.DirectionalLight(
+    0xffffff,
+    6
+  );
+
+    mainLight.position.set(5,8,5);
+
+    mainLight.castShadow = true;
+
+    scene.add(mainLight);
+
+const fillLight =
+  new THREE.DirectionalLight(
+    0xffd28a,
+    3
+  );
+
+fillLight.position.set(-5,4,-3);
+
+scene.add(fillLight);
+
+const topLight = new THREE.SpotLight(
+  0xffffff,
+  8
+);
+
+topLight.position.set(0,8,0);
+
+topLight.angle = Math.PI / 5;
+
+topLight.penumbra = 0.6;
+
+topLight.decay = 1;
+
+topLight.distance = 20;
+
+scene.add(topLight);
+
+
+    const tableGeometry =
+      new THREE.CylinderGeometry(
+        3.1,
+        3.1,
+        0.18,
+        64
+      );
+
+    const tableMaterial =
+      new THREE.MeshStandardMaterial({
+        color: 0x70452a,
+        roughness: 0.75,
+        metalness: 0.05
+      });
+
+    const table =
+      new THREE.Mesh(
+        tableGeometry,
+        tableMaterial
+      );
+
+    table.position.y = -0.12;
+
+    table.receiveShadow = true;
+
+    scene.add(table);
+
+
+    const loader = new GLTFLoader();
+
+    const orderGroup = new THREE.Group();
+
+    scene.add(orderGroup);
+
+    orderGroup.visible = false;
+
+const reticleGeometry = new THREE.RingGeometry(
+  0.12,
+  0.16,
+  32
+);
+
+reticleGeometry.rotateX(-Math.PI / 2);
+
+const reticleMaterial = new THREE.MeshBasicMaterial({
+  color: 0xff9800
+});
+
+const reticle = new THREE.Mesh(
+  reticleGeometry,
+  reticleMaterial
+);
+
+reticle.matrixAutoUpdate = false;
+reticle.visible = false;
+
+scene.add(reticle);
+
+    let hitTestSource = null;
+    let hitTestSourceRequested = false;
+    let orderPlaced = false;
+
+    const controller = renderer.xr.getController(0);
+
+    controller.addEventListener("select", function () {
+      if (reticle.visible && !orderPlaced) {
+        orderGroup.position.setFromMatrixPosition(reticle.matrix);
+        orderGroup.quaternion.setFromRotationMatrix(reticle.matrix);
+
+        orderGroup.visible = true;
+        orderPlaced = true;
+        reticle.visible = false;
+      }
+    });
+
+    scene.add(controller);
+
+    renderer.xr.addEventListener("sessionstart", function () {
+      orderGroup.visible = false;
+      table.visible = false;
+      scene.background = null;
+
+      orderPlaced = false;
+      hitTestSource = null;
+      hitTestSourceRequested = false;
+      controls.enabled = false;
+    });
+
+    renderer.xr.addEventListener("sessionend", function () {
+      orderGroup.visible = true;
+      orderGroup.position.set(0, 0, 0);
+      orderGroup.rotation.set(0, 0, 0);
+
+      table.visible = true;
+      scene.background = new THREE.Color(0xf8f8f8);
+
+      reticle.visible = false;
+      hitTestSource = null;
+      hitTestSourceRequested = false;
+      orderPlaced = false;
+      controls.enabled = true;
+    });
+
+
+    function loadModel(modelPath) {
+
+      return new Promise((resolve, reject) => {
+
+        loader.load(
+          modelPath,
+
+          gltf => {
+            resolve(gltf.scene);
+          },
+
+          undefined,
+
+          error => {
+            reject(error);
+          }
+        );
+
+      });
+    }
+
+
+    function normaliseModel(model, targetSize = 0.9) {
+
+      const box =
+        new THREE.Box3().setFromObject(model);
+
+      const size =
+        box.getSize(new THREE.Vector3());
+
+      const centre =
+        box.getCenter(new THREE.Vector3());
+
+      const largestDimension =
+        Math.max(size.x, size.y, size.z);
+
+      if (largestDimension > 0) {
+
+        const scale =
+          targetSize / largestDimension;
+
+        model.scale.multiplyScalar(scale);
+      }
+
+      const newBox =
+        new THREE.Box3().setFromObject(model);
+
+      const newCentre =
+        newBox.getCenter(new THREE.Vector3());
+
+      model.position.x -= newCentre.x;
+
+      model.position.z -= newCentre.z;
+
+      model.position.y -= newBox.min.y;
+
+      model.traverse(child => {
+
+        if (child.isMesh) {
+          child.castShadow = true;
+          child.receiveShadow = true;
+        }
+
+      });
+
+      return model;
+    }
+
+
+    function createPositions(totalItems) {
+
+      if (totalItems === 1) {
+        return [
+          { x: 0, z: 0 }
+        ];
+      }
+
+      if (totalItems === 2) {
+        return [
+          { x: -0.75, z: 0 },
+          { x: 0.75, z: 0 }
+        ];
+      }
+
+      if (totalItems === 3) {
+        return [
+          { x: -0.9, z: 0.55 },
+          { x: 0.9, z: 0.55 },
+          { x: 0, z: -0.75 }
+        ];
+      }
+
+      if (totalItems === 4) {
+        return [
+          { x: -0.85, z: 0.7 },
+          { x: 0.85, z: 0.7 },
+          { x: -0.85, z: -0.7 },
+          { x: 0.85, z: -0.7 }
+        ];
+      }
+
+      const positions = [];
+
+      const columns = Math.ceil(
+        Math.sqrt(totalItems)
+      );
+
+      const spacing = 1.15;
+
+      for (let index = 0; index < totalItems; index++) {
+
+        const row =
+          Math.floor(index / columns);
+
+        const column =
+          index % columns;
+
+        const x =
+          (column - (columns - 1) / 2) *
+          spacing;
+
+        const z =
+          (row - (columns - 1) / 2) *
+          spacing;
+
+        positions.push({ x, z });
+      }
+
+      return positions;
+    }
+
+
+    async function buildWholeOrder() {
+
+      const selectedItems = [];
+
+      Object.keys(cart).forEach(item => {
+
+        const quantity = Number(cart[item]) || 0;
+
+        if (!foodData[item] || quantity <= 0) {
+          return;
+        }
+
+        for (let number = 0; number < quantity; number++) {
+          selectedItems.push(item);
+        }
+
+      });
+
+
+      if (selectedItems.length === 0) {
+
+        loadingMessage.innerText =
+          "Your cart is empty.";
+
+        return;
+      }
+
+
+      try {
+
+        const positions =
+          createPositions(selectedItems.length);
+
+        const modelCache = {};
+
+
+        for (
+          let index = 0;
+          index < selectedItems.length;
+          index++
+        ) {
+
+          const itemName =
+            selectedItems[index];
+
+          const food =
+            foodData[itemName];
+
+
+          if (!modelCache[itemName]) {
+
+            const originalModel =
+              await loadModel(food.model);
+let targetSize = 0.85;
+
+if (itemName === "pizza") {
+  targetSize = 1.35;
+}
+
+if (itemName === "burger") {
+  targetSize = 0.9;
+}
+
+if (itemName === "coffee") {
+  targetSize = 0.55;
+}
+
+normaliseModel(
+  originalModel,
+  targetSize
+);
+            modelCache[itemName] =
+              originalModel;
+          }
+
+
+          const model =
+            modelCache[itemName].clone(true);
+
+          model.position.x =
+            positions[index].x;
+
+          model.position.z =
+            positions[index].z;
+
+          model.position.y = 0;
+
+          model.rotation.y =
+            index * 0.35;
+
+          orderGroup.add(model);
+        }
+
+
+        if (!renderer.xr.isPresenting) {
+          orderGroup.visible = true;
+        }
+
+        loadingMessage.style.display = "none";
+
+      } catch (error) {
+
+        console.error(
+          "Whole-order model loading failed:",
+          error
+        );
+
+        loadingMessage.innerText =
+          "One or more 3D models could not be loaded. Check the GLB filenames.";
+
+      }
+
+    }
+
+
+    buildWholeOrder();
+
+
+    document
+      .getElementById("resetViewButton")
+      .addEventListener("click", function () {
+
+        camera.position.set(0, 2.4, 4.8);
+
+        controls.target.set(0, 0.5, 0);
+
+        controls.update();
+
+      });
+
+
+    function handleResize() {
+
+      const width =
+        sceneContainer.clientWidth;
+
+      const height =
+        sceneContainer.clientHeight;
+
+      camera.aspect = width / height;
+
+      camera.updateProjectionMatrix();
+
+      renderer.setSize(width, height);
+
+    }
+
+
+    window.addEventListener(
+      "resize",
+      handleResize
+    );
+
+
+    function animate(timestamp, frame) {
+
+      if (renderer.xr.isPresenting && frame) {
+        const referenceSpace = renderer.xr.getReferenceSpace();
+        const session = renderer.xr.getSession();
+
+        if (hitTestSourceRequested === false) {
+          session
+            .requestReferenceSpace("viewer")
+            .then(function (viewerSpace) {
+              return session.requestHitTestSource({
+                space: viewerSpace
+              });
+            })
+            .then(function (source) {
+              hitTestSource = source;
+            })
+            .catch(function (error) {
+              console.error("Hit-test setup failed:", error);
+            });
+
+          session.addEventListener("end", function () {
+            hitTestSourceRequested = false;
+            hitTestSource = null;
+          });
+
+          hitTestSourceRequested = true;
+        }
+
+        if (hitTestSource && orderPlaced === false) {
+          const hitTestResults = frame.getHitTestResults(hitTestSource);
+
+          if (hitTestResults.length > 0) {
+            const hit = hitTestResults[0];
+            const pose = hit.getPose(referenceSpace);
+
+            if (pose) {
+              reticle.visible = true;
+              reticle.matrix.fromArray(pose.transform.matrix);
+            }
+          } else {
+            reticle.visible = false;
+          }
+        }
+      } else {
+        controls.update();
+      }
+
+      renderer.render(scene, camera);
+    }
+
+    renderer.setAnimationLoop(animate);
+  </script>
+
+</body>
+</html>

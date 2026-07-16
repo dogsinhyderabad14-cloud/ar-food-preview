@@ -178,43 +178,47 @@ button:hover {
   font-weight: bold;
   margin: 0 12px;
 }
+.whole-order-btn{
+background:#111;
+color:#ff9800;
+border:2px solid #ff9800;
+padding:14px 30px;
+border-radius:30px;
+font-size:18px;
+font-weight:bold;
+cursor:pointer;
+}
 </style>
 </head>
 
 <body>
 
-  <header>
+ <header>
 
-<div style="display:flex;justify-content:space-between;align-items:center;">
+  <button
+    onclick="window.location.href='login.html'"
+    style="
+      position:absolute;
+      top:18px;
+      right:18px;
+      background:#ff9800;
+      color:#111;
+      padding:10px 18px;
+      border:none;
+      border-radius:25px;
+      font-weight:bold;
+      cursor:pointer;
+      z-index:999;
+    ">
+    🔐 Staff Login
+  </button>
 
-<div>
-<h1>KRUTZ Food AR Menu</h1>
-<p>View food in 3D and place it on your table using AR</p>
-</div>
+  <h1>KRUTZ Food AR Menu</h1>
+  <p>View food in 3D and place it on your table using AR</p>
 
-<div>
-<button
-onclick="window.location.href='login.html'"
-style="
-background:#222;
-color:white;
-padding:12px 22px;
-border:none;
-border-radius:25px;
-font-weight:bold;
-cursor:pointer;
-">
-🔐 Staff Login
-</button>
-</div>
-
-</div>
-
-<div class="header-buttons">
-<button class="scanner-btn" onclick="openScanner()">
-📷 Scan Table QR
-</button>
-</div>
+  <div class="header-buttons">
+    <button class="scanner-btn" onclick="openScanner()">📷 Scan Table QR</button>
+  </div>
 
 </header>
 
@@ -227,9 +231,25 @@ cursor:pointer;
 </div>
 
 <div class="checkout-box">
-  <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+<button
+class="whole-order-btn"
+onclick="goToWholeOrder()">
 
-  <br><br>
+👓 View Complete Order in 3D
+
+</button>
+
+<br><br>
+
+<button
+class="checkout-btn"
+onclick="goToCheckout()">
+
+Proceed to Checkout
+
+</button>
+
+<br><br>
 
   <button class="voice-btn" onclick="startVoiceOrder()">🎤 Voice Order</button>
 
@@ -373,6 +393,7 @@ window.removeItem = function(item) {
 };
 
 function updateCart() {
+  localStorage.setItem("krutzCart", JSON.stringify(cart));
   const totalItems = cart.burger + cart.pizza + cart.coffee;
 
   const totalPrice =
@@ -390,6 +411,30 @@ function updateCart() {
 
 window.openScanner = function() {
   alert("For QR testing, open: index.html?table=1");
+};
+
+window.goToWholeOrder = function(){
+
+const totalItems =
+cart.burger +
+cart.pizza +
+cart.coffee;
+
+if(totalItems===0){
+
+alert("Please add at least one item.");
+
+return;
+
+}
+
+localStorage.setItem(
+"krutzCart",
+JSON.stringify(cart)
+);
+
+window.location.href="whole-order-ar.html";
+
 };
 
 window.goToCheckout = function() {
