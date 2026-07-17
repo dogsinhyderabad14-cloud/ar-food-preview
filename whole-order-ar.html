@@ -466,12 +466,11 @@
       THREE.PCFSoftShadowMap;
 
     sceneContainer.appendChild(renderer.domElement);
-const arButton = ARButton.createButton(renderer,{
-    requiredFeatures:["hit-test"]
+const arButton = ARButton.createButton(renderer, {
+    requiredFeatures: ["hit-test"]
 });
 
 document.body.appendChild(arButton);
-
 
     const controls = new OrbitControls(
       camera,
