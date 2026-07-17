@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>KRUTZ Combined Order AR</title>
+
+  <script
+    type="module"
+    src="https://unpkg.com/@google/model-viewer/dist/model-viewer.min.js">
+  </script>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #fff4e8;
+    }
+
+    h1 {
+      margin-bottom: 8px;
+    }
+
+    p {
+      color: #555;
+    }
+
+    model-viewer {
+      width: 100%;
+      max-width: 800px;
+      height: 600px;
+      margin: 25px auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .back-btn {
+      display: inline-block;
+      padding: 12px 20px;
+      border-radius: 10px;
+      background: #111;
+      color: white;
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>KRUTZ Complete Order</h1>
+
+  <p>
+    Burger, Pizza and Coffee in one AR scene
+  </p>
+
+  <model-viewer
+    src="test-complete-order.glb"
+    alt="Complete restaurant order"
+    camera-controls
+    auto-rotate
+    ar
+    ar-modes="scene-viewer webxr quick-look"
+    ar-scale="auto"
+    shadow-intensity="1.5"
+    shadow-softness="0.8"
+    exposure="1.4">
+  </model-viewer>
+
+  <a href="index.html" class="back-btn">
+    Back to Menu
+  </a>
+
+</body>
+</html>
