@@ -466,16 +466,9 @@
       THREE.PCFSoftShadowMap;
 
     sceneContainer.appendChild(renderer.domElement);
-    const arButton = ARButton.createButton(
-  renderer,
-  {
-    requiredFeatures: ["hit-test"],
-    optionalFeatures: ["dom-overlay"],
-    domOverlay: {
-      root: document.body
-    }
-  }
-);
+const arButton = ARButton.createButton(renderer,{
+    requiredFeatures:["hit-test"]
+});
 
 document.body.appendChild(arButton);
 
@@ -627,6 +620,7 @@ scene.add(reticle);
     scene.add(controller);
 
     renderer.xr.addEventListener("sessionstart", function () {
+      document.querySelector(".container").style.display="none";
       orderGroup.visible = false;
       table.visible = false;
       scene.background = null;
@@ -638,6 +632,7 @@ scene.add(reticle);
     });
 
     renderer.xr.addEventListener("sessionend", function () {
+      document.querySelector(".container").style.display = "block";
       orderGroup.visible = true;
       orderGroup.position.set(0, 0, 0);
       orderGroup.rotation.set(0, 0, 0);
