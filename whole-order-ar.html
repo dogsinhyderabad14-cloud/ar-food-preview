@@ -618,33 +618,49 @@ scene.add(reticle);
 
     scene.add(controller);
 
-    renderer.xr.addEventListener("sessionstart", function () {
-      document.querySelector(".container").style.display="none";
-      orderGroup.visible = false;
-      table.visible = false;
-      scene.background = null;
+ renderer.xr.addEventListener("sessionstart", function () {
+  const container = document.querySelector(".container");
 
-      orderPlaced = false;
-      hitTestSource = null;
-      hitTestSourceRequested = false;
-      controls.enabled = false;
-    });
+  if (container) {
+    container.style.setProperty("display", "none", "important");
+  }
 
-    renderer.xr.addEventListener("sessionend", function () {
-      document.querySelector(".container").style.display = "block";
-      orderGroup.visible = true;
-      orderGroup.position.set(0, 0, 0);
-      orderGroup.rotation.set(0, 0, 0);
+  document.body.style.padding = "0";
+  document.body.style.background = "transparent";
 
-      table.visible = true;
-      scene.background = new THREE.Color(0xf8f8f8);
+  orderGroup.visible = false;
+  table.visible = false;
+  scene.background = null;
 
-      reticle.visible = false;
-      hitTestSource = null;
-      hitTestSourceRequested = false;
-      orderPlaced = false;
-      controls.enabled = true;
-    });
+  orderPlaced = false;
+  hitTestSource = null;
+  hitTestSourceRequested = false;
+  controls.enabled = false;
+});
+
+  renderer.xr.addEventListener("sessionend", function () {
+  const container = document.querySelector(".container");
+
+  if (container) {
+    container.style.removeProperty("display");
+  }
+
+  document.body.style.padding = "20px";
+  document.body.style.background = "";
+
+  orderGroup.visible = true;
+  orderGroup.position.set(0, 0, 0);
+  orderGroup.rotation.set(0, 0, 0);
+
+  table.visible = true;
+  scene.background = new THREE.Color(0xf8f8f8);
+
+  reticle.visible = false;
+  hitTestSource = null;
+  hitTestSourceRequested = false;
+  orderPlaced = false;
+  controls.enabled = true;
+});
 
 
     function loadModel(modelPath) {
