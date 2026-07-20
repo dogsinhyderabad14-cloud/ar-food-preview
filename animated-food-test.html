@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>KRUTZ Animated AR Food</title>
+
+  <script
+    type="module"
+    src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
+  </script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top, #292929 0%, #101010 60%);
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .page {
+      width: min(100%, 520px);
+      padding: 18px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 25px;
+    }
+
+    .subtitle {
+      margin: 0 0 16px;
+      color: #cccccc;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .viewer-box {
+      position: relative;
+      overflow: hidden;
+      border-radius: 22px;
+      background: #eeeeee;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    }
+
+    model-viewer {
+      width: 100%;
+      height: 520px;
+      background: #eeeeee;
+      transform-origin: center bottom;
+      opacity: 0;
+
+      transform:
+        translateY(130px)
+        scale(0.15)
+        rotateY(-20deg);
+
+      transition:
+        opacity 0.4s ease,
+        transform 1.8s cubic-bezier(0.2, 0.9, 0.25, 1.2);
+    }
+
+    model-viewer.food-enter {
+      opacity: 1;
+
+      transform:
+        translateY(0)
+        scale(1)
+        rotateY(0deg);
+    }
+
+    model-viewer.food-bounce {
+      animation: foodBounce 650ms ease;
+    }
+
+    @keyframes foodBounce {
+      0% {
+        transform: translateY(0) scale(1);
+      }
+
+      35% {
+        transform: translateY(-18px) scale(1.04);
+      }
+
+      65% {
+        transform: translateY(4px) scale(0.99);
+      }
+
+      100% {
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .ar-button {
+      position: absolute;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      z-index: 10;
+
+      width: max-content;
+      max-width: calc(100% - 30px);
+
+      border: none;
+      border-radius: 999px;
+      padding: 13px 22px;
+
+      background: #111111;
+      color: white;
+
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .control-button {
+      flex: 1;
+      min-height: 46px;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    #replayButton {
+      background: white;
+      color: #111111;
+    }
+
+    #viewArButton {
+      background: #d4af37;
+      color: #111111;
+    }
+
+    .status {
+      min-height: 22px;
+      margin-top: 13px;
+      color: #dddddd;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .device-support {
+      margin-top: 8px;
+      color: #aaaaaa;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 500px) {
+      .page {
+        padding: 10px;
+      }
+
+      model-viewer {
+        height: 470px;
+      }
+
+      .controls {
+        flex-direction: column;
+      }
+
+      .control-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <h1>KRUTZ Food Story</h1>
+
+    <p class="subtitle">
+      View your complete order with a cinematic presentation
+      on Android and iPhone.
+    </p>
+
+    <div class="viewer-box">
+
+      <model-viewer
+        id="foodModel"
+
+        src="test-complete-order-v2.glb"
+
+        alt="Burger, pizza and coffee complete order"
+
+        camera-controls
+        touch-action="pan-y"
+        auto-rotate
+        rotation-per-second="12deg"
+
+        shadow-intensity="1"
+        shadow-softness="0.8"
+
+        exposure="1.05"
+        tone-mapping="commerce"
+
+        ar
+        ar-modes="webxr scene-viewer quick-look"
+        ar-scale="auto"
+        ar-placement="floor">
+
+        <button
+          slot="ar-button"
+          class="ar-button"
+          type="button">
+          View on Your Table
+        </button>
+
+      </model-viewer>
+
+    </div>
+
+    <div class="controls">
+
+      <button
+        id="replayButton"
+        class="control-button"
+        type="button">
+        Replay Animation
+      </button>
+
+      <button
+        id="viewArButton"
+        class="control-button"
+        type="button">
+        Open AR
+      </button>
+
+    </div>
+
+    <div id="status" class="status">
+      Loading food model…
+    </div>
+
+    <div class="device-support">
+      Android uses the GLB model. On iPhone, Quick Look creates the required AR
+      version automatically from the GLB.
+    </div>
+
+  </main>
+
+  <script>
+    const foodModel = document.getElementById("foodModel");
+    const replayButton = document.getElementById("replayButton");
+    const viewArButton = document.getElementById("viewArButton");
+    const status = document.getElementById("status");
+
+    let animationTimer = null;
+    let bounceTimer = null;
+    let bounceRemoveTimer = null;
+
+    const userAgent = navigator.userAgent || "";
+
+    const isIOS =
+      /iPad|iPhone|iPod/.test(userAgent) ||
+      (
+        navigator.platform === "MacIntel" &&
+        navigator.maxTouchPoints > 1
+      );
+
+    const isAndroid = /Android/i.test(userAgent);
+
+    function clearFoodTimers() {
+      clearTimeout(animationTimer);
+      clearTimeout(bounceTimer);
+      clearTimeout(bounceRemoveTimer);
+    }
+
+    function playFoodStory() {
+      clearFoodTimers();
+
+      foodModel.classList.remove("food-enter");
+      foodModel.classList.remove("food-bounce");
+
+      /*
+        Forces the browser to restart the entrance animation
+        when Replay Animation is pressed.
+      */
+      void foodModel.offsetWidth;
+
+      status.textContent = "Preparing your food story…";
+
+      animationTimer = setTimeout(() => {
+        foodModel.classList.add("food-enter");
+
+        status.textContent = "Your complete order is ready.";
+
+        bounceTimer = setTimeout(() => {
+          foodModel.classList.add("food-bounce");
+
+          bounceRemoveTimer = setTimeout(() => {
+            foodModel.classList.remove("food-bounce");
+          }, 700);
+
+        }, 1750);
+
+      }, 250);
+    }
+
+    function updateDeviceMessage() {
+      if (isIOS) {
+        status.textContent =
+          "iPhone detected. Quick Look will prepare the AR model from the GLB.";
+        return;
+      }
+
+      if (isAndroid) {
+        status.textContent =
+          "Android detected. Scene Viewer or WebXR will use the GLB model.";
+        return;
+      }
+
+      status.textContent =
+        "3D preview ready. Open this page on Android or iPhone to test AR.";
+    }
+
+    foodModel.addEventListener("load", () => {
+      playFoodStory();
+    });
+
+    foodModel.addEventListener("error", (event) => {
+      console.error("Model loading error:", event);
+
+      status.textContent =
+        "The 3D model failed to load. Check that test-complete-order-v2.glb is in the same folder as this HTML file.";
+    });
+
+    foodModel.addEventListener("ar-status", (event) => {
+      const arStatus = event.detail.status;
+
+      if (arStatus === "session-started") {
+        status.textContent = "AR started successfully.";
+      }
+
+      if (arStatus === "not-presenting") {
+        updateDeviceMessage();
+      }
+
+      if (arStatus === "failed") {
+        status.textContent =
+          "AR could not start. Check your browser, device support and internet connection.";
+      }
+    });
+
+    replayButton.addEventListener("click", () => {
+      playFoodStory();
+    });
+
+    viewArButton.addEventListener("click", async () => {
+      if (!foodModel.canActivateAR) {
+        if (isIOS) {
+          status.textContent =
+            "iPhone AR is unavailable. Open the published HTTPS website in Safari and wait for the model to finish loading.";
+        } else if (isAndroid) {
+          status.textContent =
+            "Android AR is unavailable. Use Chrome and check Google Play Services for AR.";
+        } else {
+          status.textContent =
+            "Open this page on a supported Android phone or iPhone to use AR.";
+        }
+
+        return;
+      }
+
+      try {
+        status.textContent = isIOS
+          ? "Preparing iPhone AR…"
+          : "Opening AR…";
+
+        await foodModel.activateAR();
+
+      } catch (error) {
+        console.error("AR activation failed:", error);
+
+        status.textContent =
+          "Unable to open AR. Make sure the page is published using HTTPS and the GLB loads correctly.";
+      }
+    });
+  </script>
+
+</body>
+</html>
